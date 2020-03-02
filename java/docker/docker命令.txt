@@ -229,33 +229,6 @@ Navicat连接MySQL，出现2059 - authentication plugin 'caching_sha2_password'�
 use mysql;
 ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '123456';
 
-mysql导出数据：mysqldump
-（https://blog.csdn.net/muriyue6/article/details/82848358）
-（http://www.yinxi.net/zt/show.php?ztID=11215）
-docker exec -it 8c459c071087  mysqldump -uroot -p123456 gms_base > demo.sql            导出gms_base数据库
-docker exec -it 8c459c071087  mysqldump --opt -t -uroot -p123456 gms_base > demo2.sql  使用mysqldump只导出数据不导出表结构
-docker exec -it mysql01 mysqldump --opt -d -uroot -proot demo > /home/bak/demo1.sql    使用mysqldump只导出表结构不导出数据
-docker exec -it 8c459c071087 mysqldump -uroot -p123456 --default-character-set=utf8  gms_base sys_user_log > userlog.sql  指定表导出
-docker exec -it 8c459c071087  mysqldump -uroot -p123456 -d  -B mysql gms_base  > demo.sql  
--d:只导出结构
--B d1 d2 指定导出多个数据库
--A 导出所有数据库
---default-character-set=utf8  指定导出编码类型
-
-数据库中执行set names utf8; 设置数据库编码
-在数据库中使用source命令导入sql文件
-
-导入数据时报错：
-ERROR 1231 (42000): Variable 'character_set_client' can't be set to the value of 'NULL'
-1.mysql设置导入文件大小的限制：
-(https://blog.csdn.net/yabingshi_tech/article/details/52813855)
-set global max_allowed_packet = 2*1024*1024*10;
-2.打开sql文件，删除这几行：
-(https://stackoverflow.com/questions/29112716/mysql-error-1231-42000variable-character-set-client-cant-be-set-to-the-val)
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
 ***************************************************************************************
 
 15.rabbitmq运行并创建用户、密码
@@ -278,6 +251,16 @@ The authenticity of host 'localhost (127.0.0.1)' can't be established的处理�
 修改/etc/ssh/ssh_config：
 追加：StrictHostKeyChecking no
          UserKnownHostsFile /dev/null
+
+***************************************************************************************
+
+docker安装druid
+
+docker pull druidio/example-cluster
+docker run --rm -i -p 3000:8082 -p 3001:8081 druidio/example-cluster
+
+报Not enough direct memory.  Please adjust -XX:MaxDirectMemorySize, druid.processing.numThreads, druid.processing.numThreads, or druid.processing.numMergeBuffers: maxDirectMemory[1,011,351,552], memoryNeeded[2,617,245,696] = druid.processing.buffer.sizeBytes[67,108,864] * (druid.processing.numMergeBuffers[7] + druid.processing.numThreads[31] + 1)
+处理：修改容器/etc/supervisor/conf.d/supervisord.conf的配置，调小druid.processing.numThreads或者druid.processing.buffer.sizeBytes，容器中的文件可以拷贝到容器外修改
 
 ***************************************************************************************
 

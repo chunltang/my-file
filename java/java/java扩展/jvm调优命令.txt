@@ -48,7 +48,7 @@ wmic process where caption="java.exe" get processid,caption,commandline /value
 *********************************************************************************************************************
 
 3.查看JVM里面所有进程的具体状态, 包括进程ID，进程启动的路径
-jsp命令
+jps命令
 -l : 输出主类全名或jar路径
 -q : 只输出LVMID
 -m : 输出JVM启动时传递给main()的参数
@@ -104,6 +104,7 @@ jhat [dumpfile]
 
 9.JDK8-JVM启动参数设置
 -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=128m -Xms1024m -Xmx1024m -Xmn256m -Xss256k -XX:SurvivorRatio=8 -XX:+UseConcMarkSweepGC 
+-Xmx180M -Xms180M -XX:MaxDirectMemorySize=20M -XX:MetaspaceSize=100M
 
   -XX:MetaspaceSize=128m （元空间默认大小） 
   -XX:MaxMetaspaceSize=128m （元空间最大大小） 
@@ -114,3 +115,12 @@ jhat [dumpfile]
   -XX:SurvivorRatio=8 （新生代分区比例 8:2） 
   -XX:+UseConcMarkSweepGC （指定使用的垃圾收集器，这里使用CMS收集器） 
   -XX:+PrintGCDetails （打印详细的GC日志）
+  -XX:MaxDirectMemorySize （直接内存大小）
+
+*********************************************************************************************************************
+
+10.在docker中不能使用监控命令，执行:
+echo 0 > /proc/sys/kernel/yama/ptrace_scope
+
+
+

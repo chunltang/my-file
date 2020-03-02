@@ -1,0 +1,14 @@
+1. yum install ruby rubygems ruby-devel -y
+2.gem sources -l
+使用该命令行查看gem自带的源
+3.gem sources --remove http://rubygems.org/
+删除gem自带源
+4.gem sources --add https://gems.ruby-china.com/
+5.gem install redis-dump -V
+进行到这步的时候会报错，解决办法可以参考https://blog.csdn.net/qq_35981283/article/details/80454351或者https://blog.csdn.net/fengye_yulu/article/details/77628094
+
+
+作者：96ebc997d5c4
+链接：https://www.jianshu.com/p/6dfc04d6c0d7
+来源：简书
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。

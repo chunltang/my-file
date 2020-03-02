@@ -1,6 +1,5 @@
-https://blog.csdn.net/helloloser/article/details/80421590   git的详细使用
-
-https://blog.csdn.net/mrjkzhangma/article/details/89466811  第一次将项目push到远程创库
+﻿https://blog.csdn.net/helloloser/article/details/80421590   git的详细使用
+https://blog.csdn.net/qq_33039699/article/details/82866785  解决idea中git冲突
 
 1.git init
 选择一个目录执行git init初始化一个分支
@@ -126,7 +125,7 @@ https://blog.csdn.net/mrjkzhangma/article/details/89466811  第一次将项目pu
 把远程的origin的dev分支到本地来，于是可以使用命令创建本地dev分支 
 
 
-31.git pull origin master
+31.git pull
 抓取远程的分支到本地，需要先设置链接
 
 
@@ -165,3 +164,42 @@ git add <file1> <file2>...；git add .(git add -A)添加所有新添加的和有
 在本地新建一个文件夹，作为本地仓库，如“demo”。打开git，输入命令：cd /c/Users/Administrator/Desktop/demo  然后按回车键进入到该文件夹目录下；
 将本地仓库初始化，命令：git init；
 将需要的项目从github或者服务器上克隆下来，命令：git clone urlurl为项目服务器地址或github地址
+
+************************************************************************************************************************
+
+//查询当前远程的版本
+$ git remote -v
+//获取最新代码到本地(本地当前分支为[branch]，获取的远端的分支为[origin/branch])
+$ git fetch origin master  [示例1：获取远端的origin/master分支]
+$ git fetch origin dev [示例2：获取远端的origin/dev分支]
+//查看版本差异
+$ git log -p master..origin/master [示例1：查看本地master与远端origin/master的版本差异]
+$ git log -p dev..origin/dev   [示例2：查看本地dev与远端origin/dev的版本差异]
+//合并最新代码到本地分支
+$ git merge origin/master  [示例1：合并远端分支origin/master到当前分支]
+$ git merge origin/dev [示例2：合并远端分支origin/dev到当前分支]
+
+************************************************************************************************************************
+步骤：
+
+1.安装git
+
+2.打开bash Here
+
+3.配置账户和邮箱，为gitlab的登陆用户
+git config --global user.name "nameVal"   配置账户
+git config --global user.email "eamil@qq.com"  配置邮箱
+
+4.初始化本地仓库
+创建项目文件夹，执行 git init
+
+5.本地仓库和远程仓库建立映射
+git remote add orgin http://192.168.2.100/cltang/gms.git
+
+6.执行更新
+git pull --rebase origin master
+
+7.提交代码到远程仓库,第一次提交需要加-u参数
+git push origin  -u master
+
+************************************************************************************************************************

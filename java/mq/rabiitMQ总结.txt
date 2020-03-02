@@ -88,3 +88,16 @@ direct：路由模式
 
 topic：主题模式（通配符模式）
 和路由模式类似，匹配有相似路由键的消息
+
+************************************************************************************************
+
+2.消息设置过期时间ttl
+ 对队列设置过期:在声明队列是添加参数:
+  Map<String, Object> argss = new HashMap<String , Object>();
+  argss.put("x-message-ttl" , 30*1000);//设置队列里消息的ttl的时间30s
+  channel.queueDeclare(queueName1, true, false, false, argss);
+
+ 对每条消息设置过期时间,对每条消息的属性设置expiration:
+ AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
+ builder.deliveryMode(2); //DeliveryMode等于2就说明这个消息是persistent的。1是默认，不是持久的。
+ builder.expiration("30000");
