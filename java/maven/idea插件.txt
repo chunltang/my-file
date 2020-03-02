@@ -1,0 +1,17 @@
+1.CodeGlance  代码小地图
+
+2.lombok   set/get/slf4j
+
+3.Grep Console  控制台打印
+
+4.IDEA Mind Map  思维导图
+
+5.ASM Bytecode Outline 查看class字节码
+
+6.stackoverflow  定位异常
+
+7.mybatis plugin  xml文件和接口跳转
+
+8.generateAllSetter   一键生成set方法
+
+9.material Theme UI  主题插件

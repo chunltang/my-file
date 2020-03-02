@@ -1,0 +1,167 @@
+https://blog.csdn.net/helloloser/article/details/80421590   git的详细使用
+
+https://blog.csdn.net/mrjkzhangma/article/details/89466811  第一次将项目push到远程创库
+
+1.git init
+选择一个目录执行git init初始化一个分支
+
+
+2.git add readme.txt
+添加文件到版本库
+
+
+3.git commit -m "增加内容"
+提交内容及注释
+
+
+4.git status
+查看是否还有文件未提交
+
+
+5.git diff readme.txt
+查看修改了那些内容
+
+
+6. git log
+查看提交历史
+
+
+7.git log --pretty=oneline
+只显示版本号和注释
+
+
+8.git reset --hard HEAD^
+版本回退，一个^符号回退一个版本，回退多个版本使用多个^
+
+
+9.git reflog 
+查看所有日志，包括回退的版本号
+
+
+10.git reset  –hard 接版本号
+回退到指定版本
+
+
+11.git reset  –hard HEAD~100
+回退到前100个版本
+
+
+12.rm b.txt
+删除文件
+
+
+13.ssh-keygen -t rsa -C "1471728876@qq.com"
+获取ssh公钥
+
+
+14.ssh -T git@github.com
+测试与github的连接
+
+
+15.git push -u origin master
+第一次推送本地分支到github上，需要-u输入密码，之后不需要-u参数就能提交
+
+
+16.git clone https://github.com/chunltang/testgit2
+克隆github仓库到本地
+
+
+17.git checkout -b dev 
+创建分支并切换，相当于git branch dev和git checkout dev的结合
+
+
+17.git branch
+查看分支，会列出所有的分支，当前分支前面会添加一个星号
+
+
+18.git merge dev
+把dev分支内容合并到当前分支上
+
+
+19.git branch -d dev
+删除分支
+
+
+20.git branch name
+创建分支
+
+
+21.git merge --no-ff -m "merge with no-ff" dev
+使用no-ff 禁用fast forward模式，在fast forward模式下删除分支会丢掉分支信息
+
+
+22.git log --graph --pretty=oneline --abbrev-commit
+显示提交版本和注释信息
+
+
+23.git stash
+隐藏当前工作现场
+
+
+24.git stash list
+显示所有隐藏的工作区
+
+
+25.git stash apply
+恢复工作区
+
+
+26.git stash drop
+删除工作区
+
+
+27.git stash pop
+恢复工作区的同时删除工作区
+
+
+28.git remote
+查看远程仓库的信息，当你从远程库克隆时候，实际上Git自动把本地的master分支和远程的master分支对应起来了，并且远程库的默认名称是origin
+
+
+29.git remote -v
+查看远程仓库的详细信息
+
+
+30.git checkout  –b dev origin/dev
+把远程的origin的dev分支到本地来，于是可以使用命令创建本地dev分支 
+
+
+31.git pull origin master
+抓取远程的分支到本地，需要先设置链接
+
+
+32.git branch --set-upstream dev origin/dev
+创建本地dev分支和远程仓库dev分支的链接
+
+
+33.git config --list
+查看git的配置
+
+
+34.添加多个文件
+git add <file1> <file2>...；git add .(git add -A)添加所有新添加的和有改动的文件
+
+
+35.git commit -m <message>
+提交暂存区的所有文件(后面的message不可缺少)
+
+
+36.git commit <file1> <file2> -m <message>
+提交暂存区的指定文件
+
+
+37.git remote add origin https://github.com/chunltang/upload
+将本地仓库关联到GitHub仓库上
+
+
+38.git pull --rebase origin master
+解决github里的readme文件没有下载下来的问题
+
+
+39.克隆
+1.从已经克隆下来的代码里用git指令显示其url地址可以使用remote -v参数。
+2.git remote 不带参数，可以列出已经存在的远程分支,加上-v参数可以列出详细信息，在每一个名字后面列出其远程url地址，此时， -v 选项(译注:此为 –verbose 的简写,取首字母),显示对应的克隆地址。
+3.使用Git命令将项目从github克隆下来的方法：
+在本地新建一个文件夹，作为本地仓库，如“demo”。打开git，输入命令：cd /c/Users/Administrator/Desktop/demo  然后按回车键进入到该文件夹目录下；
+将本地仓库初始化，命令：git init；
+将需要的项目从github或者服务器上克隆下来，命令：git clone urlurl为项目服务器地址或github地址

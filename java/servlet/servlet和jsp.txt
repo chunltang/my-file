@@ -1,0 +1,91 @@
+servlet是线程不安全的，单列的，servlet是独立于平台和协议的服务器端的java应用程序，可以动态生成web页面。
+
+1.servlet的执行流程
+
+  servlet的执行流程就是servlet的生命周期，当服务器启动的时候生命周期开始，然后通过init(根据web.xml里的startup-on-load来确定加载顺序)方法初始化servlet，在根据不同请求调用doGet和doPost
+方法，最后通过destroy方法进行销毁，
+
+
+2.get和post的区别
+
+  在页面提交数据时，get数据大小限制4k，post没有限制，get请求提交的数据会在地址栏显示，post不显示，所以post比get安全
+  
+ 
+3.一个用户登录了服务器，其他人就不能再登录这个用户，怎么实现
+
+  使用session共享，把所有的session数据保存到redis上，登录时判断是否这个session在线
+  
+ 
+4.jsp的重定向和转发的流程有什么区别
+
+  重定向是客服端行为，转发是服务端行为
+  
+  重定向时服务器产生两次请求，转发产生一次请求重定向时可以转发到项目外的任何网址，转发只能在当前项目里转发
+  
+  重定向会导致request对象信息丢失，转发不会
+  
+  转发的url不会变，request.getRequestDispatch().forward()
+  
+  重定向的url会改变，response.getRedirect().sendRedirect()
+  
+  
+5.JSP和servlet的区别
+
+  jsp的可读性强，容易看懂，并且jsp在最后会编译成servlet
+  
+  servlet容易调试，但是生成html页面工作量大
+  
+  
+6.session的主要几个方法的区别
+
+  session不能不通过new创建，需要通过getSession()或者getSession(true)方法创建，getSession()是自动创建session
+  
+  getSession(true)是强制创建session，第一次创建session的时候，就是第一次访问jsp页面(这个页面的page指令，没有设置session=false)
+  
+  销毁session调用invalidate()方法
+  
+  通过调用setMaxInactiveInterval()可以设定session的生存时间(web.xml可以设置session的生存时间)
+  
+  
+7.jsp的九大内置对象，三大指令，七大动作的具体功能
+
+  九大内置对象：
+     pageContext：只对当前jsp页面有效，里面封装了request和session的对象
+	 request：对当前请求进行封装
+	 session：浏览器会话对象，浏览器范围内有效
+	 Application:应用程序对象，对整个web工程都有效
+	 out：页面打印对象，在jsp页面打印字符串
+	 response：返回服务器信息给用户
+	 config：单个servlet配置对象，相当于servletConfig对象
+	 page:当前页面对象，也就是this
+	 exception：错误页面的exception对象，如果指定的是错误页面，这个就是异常对象
+	 
+  三大指令：
+    page，include，taglib
+
+  七大动作：
+    fowward，param，include，plugin，usebean，getProperty，setProperty
+	
+	
+8.jsp的执行原理
+
+  客户端发出请求，jsp引擎将jsp页面翻译成servlet的java源文件，在tomcat(servlet容器)中将源文件编译成class文件，并加载到内存中执行，把结果返回给客户端
+  
+  
+9.会话跟踪有哪些，他们的区别是什么
+
+  Cookie，session，application
+  
+  Cookie是http对象，客户端与服务端都可以操纵，cookie是在客户端保持状态，session是在服务端保持状态，由于cookie是保存在客户端本地的，所以数据容易被窃取，当访问量很多时，使用session
+则会降低服务器的性能，application的作用域是整个工程里只有一个，可以在不同浏览器之间共享数据，所有人可以共享，因此application也不是安全的
+
+
+10.为什么在session中少放对象
+
+  应为session底层是由cookie实现的，当客户端的cookie被禁用后，session也会失效，且应尽量少向session中保存信息，session的数据保存在服务器端，当有大量session时，会降低服务器的性能
+  
+  
+11.怎么判断用户请求时是第一次，如果客户端和服务端断开怎么连到上一次操作
+
+  通过session中的isNew()可以判断是否是新用户，可以用cookie来保存信息到客服端，可以连接到上一次操作
+	 

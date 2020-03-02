@@ -1,0 +1,313 @@
+java多线程
+
+原子性（atomicity）:原子性意味着一个线程一次只能执行由一个指定监控对象（lock）保护的代码，从而防止多个线程在更新共享状态时相互冲突
+
+     原子性就是说一个操作不可以被中途cpu暂停然后调度，即不能被中断，要不就执行完，要不就不执行，如果一个操作是原子性的，那么在多线程环境下，就不会出现变量被修改等奇怪的问题
+
+可见性（visibility）：它要对付内存缓存和编译器优化的各种反常行为。一般来说，线程已某种不必让其他线程立即可以看到的方式（不管这些线程在寄存器中，在处理器特定的缓存中，还是通过指令重排或者其他编译器优化），不受缓存变量值的约束，如果使用同步，那么运行库
+
+     将确保某一线程对变量所做的更新优先于对现有sychronized块所进行的更新
+	 
+	 可见性：指当一个线程修改了线程共享变量的值，其他线程能够立即知道这个修改，java内存模型是通过在变量修改后将新值同步回主内存，在变量读取前从主内存刷新变量值，这种依赖主内存作为传递媒介的方法来实现可见性的，用valatile修饰的变量，就会具有可见性，volatile
+	 
+	     的特殊规则保证了新值能立即同步到主存中，以及每使用前立即从内存中刷新，我们可以说volatile保证了线程操作时变量的可见性，而普通变量则不能保证这一点。volatile修饰的变量不允许线程内部缓存和重排序，即直接修改内存。所以对其他线程是可见的，volatile只能
+		 
+		 被修饰内容具有可见性，但不能保证它具有原子性。同样存在线程安全的问题。
+	 
+
+并发问题：当一个对象被两个线程同时访问时，可能有一个线程会得到不可预期的结果
+
+进程和线程的关系
+
+1.进程是资源分配的基本单位，是一个程序或者服务的基本单位，我们可以说进程就是程序的执行过程，这个过程包括很多东西，如CUP执行时间，运行内存，数据处理等，而且是一个动态过程
+
+2.线程是轻量级的进程，他们是共享在父进程拥有的资源下，每个线程在父进程的环境中顺序的独立的执行一个活动，每个CPU核心在同一时刻只能执行一个线程，尽管我们感觉计算机同时开着多个任务，其实他们每个的执行都是走走停停的，CPU轮流给每个进程及线程分配时间
+
+关系：一个线程只能属于一个进程，而一个进程可以有多个线程，但至少有一个线程，线程是操作系统可识别的最小执行和调度单位
+
+     资源分配给进程，同一进程的所有线程共享该进程的所有资源。同一进程中的多个线程共享代码段（代码和常量），数据段（全局变量和静态变量），扩展段（堆存储），但是每个线程拥有自己的栈段，栈段又叫运行时段，用来存放所有的局部变量和临时变量
+	 
+	 处理机分给线程，即正真在处理机上运行的是线程
+	 
+	 线程在执行过程中，需要协作同步。不同进程的线程间要利用消息通信的办法实现同步
+	 
+
+
+	 
+多线程实列：如人在起床时要干几件事，起床-洗漱-烧水煮面-吃早餐，在烧水时，CPU（人）是空闲的，可以做其他的事情，此处引入异步操作。即CPU在运行时等待IO在做其他操作的时候，可以继续做其他事情。
+
+
+Thread.currentThread().getName()
+
+
+多线程引发的问题：
+
+1.多个线程对一个对象进行读写操作时，必然会带来数据不一致的问题（如果只有读操作，不需要同步）
+
+2.在单核的情况下，经过了线程同步的多线程应用，未必比单线程应用性能要高，因为维护多线程所耗资源并不少（虽然现在单核的环境不多了）
+
+3.只有在需要资源共享的情况下，才会用到多线程
+
+
+
+不论什么时候，只要您将编写的变量接下来可能被另一个线程获取，或者您将读取的变量最后是被另一个线程写入的，那么您必须进行同步
+
+
+线程同步的主要方法：
+
+1.原子性
+
+     描述：原子性就是说一个操作不可以被中途cpu暂停然后调度，即不能被中断，要不就执行完，要不就不执行，如果一个操作是原子性的，那么在多线程环境下，就不会出现变量被修改等奇怪的问题
+	 
+	 java的concurrent包下提供了一些原子类，如AtomicInteger
+  
+     value++就是非原子性的，它是先去value的值，再加1，最后赋值的一种机制，是一种“读-写-改”的操作，原子操作需要保证，在对对象修改的过程中，对象的状态不能被改变（可使用竞争条件来描述）
+	 
+	如何通过原子变量，将其转化为线程安全的？在java.concurrent.atomic包下有一些将数字和对象引用进行原始类状态转换的类，或者使用synchronized关键字
+	
+	列：public class Generator {
+	
+		private final AtomicLong value=new AtomicLong(0);
+		AtomicReference<Generator> str=new AtomicReference<Generator>(new Generator());
+		
+		public void getValue(){
+			value.incrementAndGet();
+		}
+		
+		public void getStr(){
+			/*str.compareAndSet("abc","111");
+			System.out.println(str.get());*/
+		}
+
+		public static void main(String[] args) {
+			Generator generator=new Generator();
+			for (int i = 0; i < 1000; i++) {
+				generator.getValue();
+				System.out.println(generator.value.get());
+				generator.value.set(100);
+				System.out.println(generator.value);
+			}
+			generator.getStr();
+		}
+    }
+	
+
+2.内部锁（synchronized）
+
+内置锁机制：synchronized块，内部锁扮演着互斥锁的角色，意味着同一时刻至多只能有一个线程可以拥有锁，其他线程被阻塞,基于调用的机制，即per-invocation
+
+
+
+3.重进入（reentrancy）
+
+基于per-thread的机制，并不是一种独立的同步方法，每个锁关联一个请求计数器和一个占有它的线程，当计数器为0时，锁是未被占有的，线程请求时，JVM将记录锁的占有者，并将计数器增1，当同一线程再次请求这个锁时，计数器递增，线程退出时，计数器减1，直到为0，锁释放
+
+
+4.可见性和过期数据
+
+
+5.显示锁
+
+显示的创建锁和释放锁 Lock lock=new ReentrantLock()  lock.lock()  lock.unlock()，与synchronized相比ReentrantLock类添加了轮询锁、定时锁等候和可中断锁等候的一些特性
+
+
+6.读写锁
+
+在读取数据的时候，能够读到最新的数据，一个资源能够被多个线程读取，或者一个线程写入，二者不同时进行。
+
+
+7.volatile变量
+
+long和double类型的变量是非原子操作的。JVM将二者（都是64位）的读写划分为两个32位的操作，只有声明为volatile，才能保证线程安全。
+
+volatile变量不会被缓存和拷贝（不确定），volatile意味着提示JVM对这个成员变量不能保存它的私有拷贝，而且直接与共享成员变量交互，volatile变量只能保证线程的可见性，但不能保证原子性
+
+    在内存中可见，任何线程都不允许对其进行拷贝，因此JVM可以保证任何时刻任何线程总能拿到该变量的最新值。
+	
+	volatile修饰的变量会保证一个变量在一个cpu中更新后立即回写到主存，回写到主存这个动作会导致其他CPU里这个变量的cache失效，这个是由缓存一致性协议保证的。
+
+
+8.semaphone(信号量)
+
+信号量的意思是设置一个最大值，来控制有限个对象同时对资源进行访问。因为有时候有些资源并不是只由一个线程同时访问
+
+
+9.临界区
+
+如果有多个线程视图同时访问临界区，那么再有一个线程进入后，其他所有视图访问此临界区的线程江北挂起，并一直持续到进入临界区的线程离开，临界区在被释放后，其他线程可以继续抢占，并以此达到原子方式操作共享资源的目的。，在使用临界区时，一般不允许其运行时间过长。
+
+
+10.同步容器
+
+在java.util.conncurrent包，里面包含各种出色的线程安全容器（即集合类），如CurrentHashMap,CopyOnWriteArrayList,LinkedBlockingDeque
+
+
+11.Collections位集合类提供线程安全的支持
+
+	对于有些线程安全的集合类，如HashMap，我们可以通过Collections的一些方法，使得HashMap变为线程安全的类，如Collections.synchronizedMap(new HashMap())
+
+	public class CollectionsTest {
+
+		public static void main(String[] args) {
+			CollectionsTest c=new CollectionsTest();
+			List<Object> objects = Collections.emptyList();
+			System.out.println(objects);
+
+			List<String> list =Collections.synchronizedList(new ArrayList<String>());
+			//List<String> list=new ArrayList<>();
+			List<Thread> tlist=new ArrayList<Thread>();
+			for (int i = 0; i < 1000; i++) {
+				ThreadTest th=c.new ThreadTest(list);
+				tlist.add(th);
+			}
+
+			for (Thread thread : tlist) {
+				thread.start();
+			}
+
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			System.out.println(list);
+		}
+
+		 class ThreadTest extends Thread{
+
+			private List<String> list;
+
+			public ThreadTest(List<String> list){
+				this.list=list;
+			}
+			@Override
+			public void run(){
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				list.add(list.size()+"");
+			}
+		}
+	}
+
+
+12.excutor框架
+
+java中的excutor只是一个接口，但它为一个强大的同步框架做好了基础，其实现可以用于异步任务执行，支持不同类型的任务执行策略，excutor框架适用于生产者-消费者模式
+
+
+13.事件驱动
+
+事件驱动的意思就是一件事情完成后，唤醒其他线程去干另一件事，这样就保证：
+
+1.数据可见性，在A线程执行的时候，B线程处于睡眠状态，补可能对共享变量进行修改
+
+2.互斥性，相当于上锁，不会有线程干扰，常用方法有：sleep(),wait(),notify()
+
+
+
+Atomic原理及分析
+
+1.Atomic包是java.util.conncurrent下的另一个专门为线程安全设计的java包，包含多个原子操作类，当有多个线程同时执行这些类的实列包含的方法时，具有排他性，及当某个线程进入方法，执行其中的指令时，不会被其他线程打断，而别的线程就像自旋锁一样，一直等待到该方法执行完成。
+
+2.实际是借助硬件的指令来实现的，不会阻塞线程。
+ 
+3.可以对基本数据、数组中的基本数据，对类中的基本数据进行操作
+
+采用CAS和volatile关键字实现硬件层面的同步，不是在软件程序中阻塞，是通过硬件阻塞
+ 
+
+ 
+ThreadLocal:
+ 
+采用哈希表的方式来为每个线程都提供一个变量的副本。从而保证各个线程间数据的安全，每个线程的数据不会被另外线程访问和破坏。
+ 
+synchronized用于线程间的数据共享，而ThreadLocal则用于线程间数据的隔离,ThreadLocal确保在同一线程中数据的同步，get()、set()、initialValue()都是与当前线程相关的，initialValue()在线程中只会被调用一次，如果在get()之前调用了set()，则不会调用initialValue()初始化值
+
+	public class Tlocal {
+		public static ThreadLocal<List> local=new ThreadLocal<List>(){
+			@Override
+			protected List initialValue(){//使用匿名内部类初始化，在方法外部声明时，使用外部变量要是static的，在方法内部声明时使用外部变量要是final的
+				List list=new ArrayList();
+				list.add("name");
+				return list;
+			}
+		};
+		public static void main(String[] args) {
+			for (int i = 0; i < 100; i++) {
+				Th t=new Th();
+				t.start();
+			}
+		}
+		
+		public static void add(){
+			List list = local.get();//local获取的都是调用该方法的线程相关的变量，实现了在同一线程中各个方法调用中获取同一变量，简化了参数的传递
+			list.add(System.currentTimeMillis());
+			System.out.println(list);
+       }
+	}
+
+	public class Th extends Thread {
+		@Override
+		public void run(){
+			List list =  Tlocal.local.get();
+			list.add(Thread.currentThread().getName());
+			System.out.println(list);
+			System.out.println("-------------------------------");
+            Tlocal.add();//这里获取的都是本线程类的list的添加
+		}
+	}
+
+
+	
+14.线程的状态和他们之间的关系
+
+  java线程有四种状态，分别为：新建，就绪，运行，阻塞，结束
+  
+  线程状态有：new，ready，running，blocked，dead
+  
+  阻塞状态：是线程因为某种原因放弃CPU使用权，暂时停止运行，知道线程进入就绪状态，才有机会转到运行状态
+  
+  阻塞的情况分为三种：
+  
+    1.等待阻塞：运行的线程执行wait()方法，该线程会释放占用的所有资源,JVM会把该线程放入“等待池”中。进入这个状态后，是不能自动唤醒的，必须依靠其他线程调用notify()或notifyAll()方法
+   才能被唤醒。
+   
+    2.同步阻塞：运行的线程在获取对象的同步锁时，若该同步锁被别的线程占用，则JVM会把该线程放入“锁池”中。
+	
+	3.其他阻塞：运行的线程执行sleep()或join()方法，或者发出I/O请求时，JVM会把该线程置为阻塞状态。当sleep()状态超时、join()等待线程终止或者超时、或者I/O处理完毕时，线程转入就绪状态。
+	
+	4.死亡状态：线程执行完了或者因异常退出了run()方法，该线程结束生命周期。
+	
+  NEW：当线程对象创建时存在的状态，此时线程不可能执行。
+  
+  Runnable：当调用thread.start()后，线程变为Runnable状态，只有得到CPU，就可以执行。
+  
+  Running:线程正在执行
+  
+  Waiting:执行thrad.join()或在锁对象调用obj.wait()等情况就会进该状态，表名线程正处于等待某个资源或条件发生来唤醒自己。
+  
+  Timed-Waiting:执行thread.sleep(long),thread.join(long)或者obj.wait(long)等就会进入该状态，与Waiting的区别在于Timed_Waiting等待时间有限制。
+  
+  Blocked：若果进入同步方法或者同步代码块，没有获取到锁，则会进入该状态。
+  
+  dead：线程执行完毕，或者抛出未捕获的异常之后，会进入dead状态，表示该线程结束。
+  
+  
+  start(),sleep(),join(),wait(),yield(),notify(),notifyAll(),suspend(),resume()
+  
+  yield():线程调用yield()方法，意思是放弃当前获得的CPU时间片，回到就绪状态，这时与其他线程处于同等竞争状态，OS有可能会接着又让这个进程进入运行状态，yield只是使当前线程重新回到可执行状态，所以执行yield的线程有可能进入到可执行状态后马上又被执行。
+  
+  suspend()和resume()方法：两个方法配套使用，suspend()使得线程进入阻塞状态，并且不会自动恢复，必须其对应的resume()被调用，才能使线程进入可执行状态，典型的，suspend()和resume()
+  被用在等待另一线程产生结果的情形：测试发现结果还没有产生，让线程进入阻塞，另一个线程产生了结果后，调用resume()使其恢复。
+  
+  wait和notify：，当调用wait后，线程会释放掉它所占用的“锁标志”，从而是线程所在对象中的其他synchronized数据可被别的线程占用，wait和notify会对对象的“锁标志”进行操作，所以他们必须在
+  synchronized函数或synchronizedblock中进行调用。wait和notify都直接隶属于Object类，调用notifyAll使得之前使用该对象调用wait的所有线程进入就绪状态，但是只有获得锁的哪一个线程才能进入可执行状态。
+  
+  死锁：suspend()和不指定超时期限的wait()方法调用都有可能产生死锁。
+  
+  
+	
+

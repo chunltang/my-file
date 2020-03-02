@@ -1,0 +1,16 @@
+1.从数据控中导出数据到txt，以|分割字段，控显示为空串
+copy (
+select send_request_user,send_request_unit,case_name,
+	   sum(case when wxdeploystatus like '%30001-7%' then 1 else 0 end) privatenum, 
+	   sum(case when wxdeploystatus like '%30005-7%' then 1 else 0 end) groupnum,
+	   sum(case when wxdeploystatus like '%30003-7%' then 1 else 0 end) circlenum 
+from jk_zk_record d  
+join jk_zk_request_log x on d.zk_request_id=x.zk_request_id and  x.zk_id!='0'  and x.jk_type='WX'  
+ and d.zk_status in ('10','11','13') 
+group by send_request_user,send_request_unit,case_name 
+order by send_request_user) to '/home/zyh/wxzk_190423.txt' delimiter '|' null as '' ;
+
+
+2.从文本类型或者csv类型文件中导入数据到表中
+通过scp命令将一个库中导出的文件传到另一个服务器上
+copy 表名 from '文件绝对路径'

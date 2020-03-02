@@ -1,0 +1,172 @@
+java中的字符串：
+
+String,Stringbuffer,StringBuider
+
+1.String
+
+   String声明的字符串长度不可变，String s=“hello world”，经过这条语句，JVM的栈内存中产生一个s变量，堆内存中产生“hello world”字符串对象，这种方式产生的字符串属于直接量字符串对象，JVM在处理这类1字符串时，会进行缓存，产生时放入字符串池中，当程序需要再次使用
+   
+         的时候，无需重新创建一个新的字符串，而是直接指向已存在的字符串
+		 
+	使用new关键字创建:new String(new char[]{'a','b','c'}); new String("xx")  new String(new Stringbuffer())  new String(new Stringbuilder())
+	
+	o instanceof String 校验对象类型
+	
+	等号(==)和equals的区别: equals比较的是对象的内容，也就是JVM堆内存中内容，==比较的是地址，也就是栈内存中的内容
+	
+	String类实现omparable接口，可以使用compareTo()比较字符串    两个有包含关系的字符串比较时返回长度差，没包含关系的字符串比较返回第一个不同字符的ASCLL的差值
+	
+	Object类的原生的equals方法，必须两个对象的地址和内容都一样才返回true，二String类重写了Object的equals()，放松了条件，只要内容或者地址相等就返回true
+	
+	hashCode() : 如果没有重写Object的hashCode()，那么如果对象调用equals返回true，则这两个对象调用hashCode()返回的整数一定相等。
+	
+	
+	public class StringTest {
+
+    public static void main(String[] args) {
+        String s = "hello world";
+        System.out.println(System.identityHashCode(s));
+        String x = "hello world";
+        System.out.println(System.identityHashCode(x));
+        System.out.println(s == x);
+
+        new String(new char[]{'a', 'b', 'c'});
+
+        String o = new String("hello world");
+        System.out.println(System.identityHashCode(o));
+        System.out.println(s == o);//false
+        System.out.println(s.equals(o));//true
+        System.out.println(o instanceof String);
+
+        String s1 = "hello";
+        String s2 = "he";
+        String s3 = "headashedsawehesdas";
+
+        System.out.println(s1.compareTo(s2));
+        System.out.println(s1.compareTo(s3));
+        System.out.println(s2.compareTo(s1));
+
+        System.out.println(s1.charAt(1));
+        System.out.println(s1.indexOf("e"));
+        System.out.println(s3.indexOf("es", 10)); //返回10以后字符串出现的值的位置
+        System.out.println(s3.indexOf('e', 10));  //返回10以后字符出现的值的位置
+
+        CharSequence sequence = s3.subSequence(1, 10);
+        System.out.println(sequence);
+        System.out.println(sequence.length());
+
+        String replace = s3.replace("da", "11");
+        System.out.println(replace);
+        String replaceAll = s3.replaceAll("da", "11");
+        System.out.println(replaceAll);
+
+        String[] split = s3.split("da", 1);
+        System.out.println(split.length);
+
+        String intern = s3.intern();  //本地方法，与equals比较类市
+        String s4=new String("headashedsawehesdas");
+        System.out.println(intern==s4);
+        System.out.println(s4.equals(intern));
+
+        String s5=s2+"llo"; //使用对象引用连接字符串时，会创建新对象
+        System.out.println(s1==s5);
+        System.out.println(s1.equals(s5));
+        System.out.println(System.identityHashCode(s5));
+        System.out.println(System.identityHashCode(s1));
+
+        String s6="he"+"llo"; //使用字符串连接不会创建新对象
+        System.out.println(s1==s6);
+
+        System.out.println(s1.hashCode()); //hashCode()返回的整数与内容相关
+        System.out.println(s5.hashCode());
+        System.out.println(s6.hashCode());
+		
+		String s8="edd-dr23$sdfsdf-fsd$sad23-d@"; 
+        String[] split1 = s8.split("-|\\$|@"); //使用多个分割符拆分
+        for (String ss : split1) {
+            System.out.println(ss);
+        }
+		
+		String name="小白";
+        byte[] bytes = name.getBytes();//字符串转字节数组
+        System.out.println(new String(bytes)); //字节数组转字符串
+      }
+   }
+   
+   
+   
+ 
+ 常量池、字符串常量池、运行时常量池介绍：
+ 
+ 常量池一般就是指字符串常量池，是用来做字符串缓存的一种机制，常量池是针对在编译期间就确定下来的常量而言的，当类被加载后，常量池会被搬到方法区的运行时常量池，此时就不再是静态的了，在运行是我们依然可以向常量池添加内容，如String类的intern()，它可以在运行时将新
+ 
+    的常量放入常量池。
+ 
+ 
+ 
+ 
+
+Stringbuffer和StringBuiler：
+
+    都是可变字符串类，默认开16个字符的长度的空间
+	
+	Stringbuffer是线程安全的，内部的大多数方法前面都有关键字synchronized，StringBuilder是非线程安全的，所以效率要高些
+	
+	StringBuffer有一系列追加、插入、删除字符串的方法，String类在追加时，源字符不变，和新串连接后，重新开辟一个内存，容易造成内存浪费
+	
+	
+	
+使用字符串加密，实现字符串和16进制的互相转换：
+
+	public class StrToHexTest {
+
+		public static void main(String[] args) {
+
+			String s9="fwrwep34ffpdf小按钮kerw950";
+			String toHexStr = strToHexStr(s9);
+			System.out.println("16进制："+toHexStr);
+			String hexStrToStr = hexStrToStr(toHexStr);
+			System.out.println("16 to str："+hexStrToStr);
+		}
+
+		public static String hexStrToStr(String hexStr){//16进制直接转换为字符串
+			String str="0123456789ABCDEF";
+			char[] hexs = hexStr.toCharArray();
+			byte[] bytes = new byte[hexStr.length() / 2];
+			int n;
+			for (int i = 0; i < bytes.length; i++) {
+				n=str.indexOf(hexs[2*i])*16;
+				n+=str.indexOf(hexs[2*i+1]);
+				bytes[i]=(byte)(n&0xff);
+			}
+			return new String(bytes);
+		}
+
+		public static String strToHexStr(String str){ //字符串转为16进制
+			char[] chars = "0123456789ABCDEF".toCharArray();
+			StringBuilder sb=new StringBuilder();
+			byte[] bytes = str.getBytes();
+			int bit;
+			for (int i = 0; i < bytes.length; i++) {
+				bit=(bytes[i]&0x0f0)>>4;
+				sb.append(chars[bit]);
+				bit=bytes[i]&0x0f;
+				sb.append(chars[bit]);
+			}
+			return sb.toString().trim();
+		}
+	}
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

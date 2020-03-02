@@ -1,0 +1,27 @@
+1.双方都要安装openssl
+
+2.在window上运行：ssh-keygen [指定目录]  生成配对的私钥、公钥
+
+3.将私钥、公钥传到linux上的~/.ssh/目录，将.pub(公钥)内容放入该文件下的authorized_keys文件中
+
+4.修改.ssh目录的权限,chmod 700 ~/.ssh，修改authorized_keys的权限 chmod 600 authorized_keys   修改私钥权限  chmod 700 ~/.ssh/id_rsa
+
+5.使用ssh-agent管理私钥：
+   window上以管理员权限打开PowerShell：输入以下命令：
+   Set-Service ssh-agent -StartupType Automatic
+   Start-Service ssh-agent
+   Get-Service ssh-agent
+   
+   linux上运行；
+   ssh-agent
+   ssh-agent bash
+   ssh-add /root/.ssh/id_rsa  (id_rsa为window上传的私钥)
+   
+   
+   visualCode的remote-ssh配置：
+   Host alias
+    HostName 192.168.43.181
+    User root
+    Port 22
+    ControlPersist  600
+    IdentityFile C:\Users\tcl\.ssh\id_rsa

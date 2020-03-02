@@ -1,0 +1,62 @@
+public class Prototype<T> implements Cloneable, Serializable {
+    private static final long serialVersionUID=1L;
+    private String str;
+    private T obj;
+
+    public Prototype(){}
+
+    public Prototype(T obj){
+        this.obj=obj;
+    }
+
+    public T getObj() {
+        return obj;
+    }
+
+    public void setObj(T obj) {
+        this.obj = obj;
+    }
+
+    //浅复制，Cloneable是一个空接口，super.clone()调用的是Object类的方法，clone()是native的，又叫本地方法
+    public Object clone()throws CloneNotSupportedException{
+        Prototype proto=(Prototype)super.clone();
+        return proto;
+    }
+
+    //深复制,需要采用流的形式读入当前对象的二进制输入，在写出二进制数据对应的对象
+    public Object deepClone() throws IOException, ClassNotFoundException {
+        System.out.println(this instanceof Prototype);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(null==this.getObj()?this:this.getObj());
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(bis);
+        return ois.readObject();
+    }
+	
+	//可改为工具类
+	public static void main(String[] args) throws IOException, ClassNotFoundException {
+		DeepCopyObj deepCopyObj=new DeepCopyObj();
+		deepCopyObj.setName("aaa");
+		Prototype pro=new Prototype(deepCopyObj);//对象深拷贝
+		Object o = pro.deepClone();
+		deepCopyObj.setName("bbb");
+		DeepCopyObj copyObj = (DeepCopyObj) o;
+		System.out.println(copyObj.getName());*/
+
+		List<String> list=new ArrayList<>();
+		list.add("name");
+		Prototype pro1=new Prototype(list);//实现集合深拷贝
+		Object o1 = pro1.deepClone();
+		List o11 = (List) o1;
+		list.add("age");
+		System.out.println(o11.size());//集合大小没变
+
+		/*String name="ccc";
+		Object deepCopyObj1 = DeepCopyObj.getDeepCopyObj(name);
+		name="ddd";
+		System.out.println(deepCopyObj1.toString());
+	}
+	
+}

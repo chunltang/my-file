@@ -1,0 +1,5 @@
+1.将.class文件编译成.h文件（https://blog.csdn.net/qq_22494029/article/details/80095448）
+javah -o .\helloworld.h -classpath .\ -jni HelloWorld
+
+2.将.c文件编译.dll动态库文件,E:\jdk1.8.0_221\include->用来指定生成的.c文件中jni.h头文件位置（https://www.cnblogs.com/KingIceMou/p/7239668.html）
+gcc -m64  -Wl,--add-stdcall-alias -I"E:\jdk1.8.0_221\include" -I"E:\jdk1.8.0_221\include\win32" -shared -o HelloNative.dll helloword.c

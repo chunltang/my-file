@@ -1,0 +1,170 @@
+java数据结构
+
+学习1：
+
+枚举(Enumeration)
+
+位集合(BitSet)
+
+向量(Vector)
+
+栈(Stack)
+
+字典(Dictionary)
+
+哈希表(Hashtable)
+
+属性(Properties)
+
+集合框架(Collection)
+
+
+
+1.枚举(Enumeration)
+
+枚举接口定义了一种从数据结构中取回连续元素的方式，列如定义了一个叫nextElement的方法，该方法用来得到一个包含多元素的数据结构的下一个元素，已被迭代器取代，很少使用了
+
+方法描述：hasMoreElements()  nextElement()   Enumeration elements=vector.elements()
+
+
+2.位集合(BitSet)
+
+位集合实现了一组可以单独设置和清除的位或标志，该类在处理一组布尔值时非常有用
+
+public class BitSetTest {
+
+    public static void main(String[] args) {
+        BitSet bitSet1=new BitSet(16);//指定索引处保存的值都是布尔类型
+        BitSet bitSet2=new BitSet(16);
+        for (int i = 0; i < 16; i++) {
+            if(i%2==0){
+                bitSet1.set(i);//将指定索引处的位设置为true
+            }
+            if(i%5!=0){
+                bitSet2.set(i);
+            }
+        }
+
+        System.out.println(bitSet1);
+
+        System.out.println(bitSet1.get(2));//true
+        bitSet1.set(2,false);
+        System.out.println(bitSet1.get(2));//false
+
+        System.out.println(bitSet2);
+
+        bitSet2.and(bitSet1);
+        System.out.println(bitSet2);
+
+        bitSet2.or(bitSet1);
+        System.out.println(bitSet2);
+
+        bitSet2.xor(bitSet1);//异或
+        System.out.println(bitSet2);
+    }
+   }
+   
+   
+3.向量(Vector)
+
+向量类和传统数组非常类似，但是Vector的大小能根据需要动态的变化，和数组一样，Vector对象的元素页可以通过索引访问
+
+使用Vector类的最主要的主要好处就是在创建对象的时候不必给对象指定大小，它的大小会根据需要动态变化，默认大小是10
+
+Vector是同步访问的
+
+
+4.栈(Stack)
+
+栈(Stack)实现了一个后进先出(LIFO)的数据结构，最后进栈的元素是最先被取出
+
+栈是Vector的一个子类
+
+	public class StackTest {
+
+		public static void main(String[] args) {
+			Stack<Object> stack = new Stack<>();
+			stack.push("0");
+			stack.push("1");
+			stack.push("2");
+			stack.push("3");
+			stack.push("4");//放入栈顶部
+
+			System.out.println(stack.search("4"));//返回对象的位置，以1为基数
+			System.out.println(stack.search("1"));
+			System.out.println(stack.peek());//返回站顶部的对象，不移除
+			System.out.println(stack.pop());//返回站顶部的对象，移除
+		}
+	}
+	
+	
+5.字典(Dictionary)
+
+字典(Dictionary)是一个抽象类，它定义了键映射到值的数据结构，当你想要通过特定的键而不是整数索引来访问数据时使用
+
+用来存储键值对，和Map类似，已过时，可以使用map代替
+
+
+6.哈希表(Hashtable)
+
+Hashtable类提供了一种用户在定义键结构的基础上来组织数据的手段，哈希表键的具体含义完全取决于哈希表的使用情况和它包含的数据
+
+和HashMap类似，但它支持同步
+
+
+7.属性(Properties)
+
+Properties继承Hashtable.Properties类表示了一个持久的属性集，属性列中每个键集对应值都是一个字符串
+
+被许多java类使用，如System.getPropertis()的方法的返回值
+
+	public class PropertiesTest {
+
+		public static void main(String[] args) {
+			Properties properties=new Properties();
+			String pname = properties.getProperty("name", "kong");//设置默认值
+			System.out.println(pname);
+
+			properties.put("age","25");
+			properties.put("hight",100); //put的非字符串只能使用get获取使用getProperty则返回null
+			String age = properties.getProperty("age");
+			String hight = properties.getProperty("hight");
+			Enumeration<?> enumeration = properties.propertyNames();
+			while (enumeration.hasMoreElements()){
+				Object o = enumeration.nextElement();
+				System.out.println(o);
+			}
+
+			Object hight1 = properties.get("hight");
+			System.out.println(hight1);
+		}
+	}
+	
+	gcc -m64  -Wl,--add-stdcall-alias -I"E:\jdk1.8.0_221\include" -I"E:\jdk1.8.0_221\include\win32" -shared -o HelloNative.dll helloworld.c
+	
+	
+	
+学习2：
+
+数据结构是计算机存储、组织数据的方式，指相互之间存在一种或多种特定关系的数据元素集合，数据结构往往同高效的检索算法和索引技术有关
+
+常用的数据结构：
+
+数组Array :插入快，查找慢，删除慢，大小固定，只能存储单一元素
+
+栈Stack :后进先出，存取其他项很慢
+
+队列(Queue) :先进先出，存取其他项很慢
+
+链表(LinkedList) :插入快，删除快，查找慢
+
+二叉树(Tree) ：如果树是平衡的，则查找、插入、删除都快  删除算法复杂
+
+红黑树 ：查找、删除、插入都快，树总是平衡的，算法复杂
+
+哈希表(Hash) ：如果关键字已知则存储极快，删除慢，如果不知道关键字存取慢，对存储空值使用不充分
+
+堆(heap) :插入、删除快，对最大数据项存取快，对其他数据项存取慢
+
+图(Graph) ：对现实世界建模，有些算法慢且复杂
+

@@ -1,0 +1,99 @@
+https://blog.csdn.net/qq_35720307/article/details/87088388
+1.在setting.xml文件中添加如下：
+<profiles>
+    <profile>
+        <!-- id必须唯一 -->
+        <id>myRepository1</id>
+        <repositories>
+            <repository>
+                <!-- id必须唯一 -->
+                <id>myRepository1_1</id>
+                <!-- 仓库的url地址 -->
+                <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+                <releases>
+                    <enabled>true</enabled>
+                </releases>
+                <snapshots>
+                    <enabled>true</enabled>
+                    <updatePolicy>always</updatePolicy>
+                </snapshots>
+            </repository>
+        </repositories>
+    </profile>
+    <profile>
+        <!-- id必须唯一 -->
+        <id>myRepository2</id>
+        <repositories>
+            <repository>
+                <!-- id必须唯一 -->
+                <id>myRepository2_1</id>
+                <!-- 仓库的url地址 -->
+                <url>http://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+                <releases>
+                    <enabled>true</enabled>
+                </releases>
+                <snapshots>
+                    <enabled>true</enabled>
+                    <updatePolicy>always</updatePolicy>
+                </snapshots>
+            </repository>
+        </repositories>
+    </profile>
+  </profiles>
+
+  <activeProfiles>
+    <!-- 激活myRepository1 -->
+    <activeProfile>myRepository1</activeProfile>
+    <!-- 激活myRepository2 -->
+    <activeProfile>myRepository2</activeProfile>
+  </activeProfiles>
+
+
+2.在pom.xml中添加：
+<repositories>
+        <repository>
+            <!-- id必须唯一 -->
+            <id>jboss-repository</id>
+            <!-- 见名知意即可 -->
+            <name>jboss repository</name>
+            <!-- 仓库的url地址 -->
+            <url>http://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+        </repository>
+        <repository>
+            <!-- id必须唯一 -->
+            <id>aliyun-repository</id>
+            <!-- 见名知意即可 -->
+            <name>aliyun repository</name>
+            <!-- 仓库的url地址 -->
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </repository>
+		<!--spring-->
+		 <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/libs-snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+</repositories>
+
+
+3.spring-boot官方的maven仓库：
+<repositories>
+	<repository>
+		<id>spring-milestones</id>
+		<name>Spring Milestones</name>
+		<url>https://repo.spring.io/libs-milestone</url>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+	</repository>
+</repositories>
+
+4.中央库：
+<mirror> 
+    <id>Central</id> 
+    <url>http://repo1.maven.org/maven2</url> 
+    <mirrorOf>central</mirrorOf> 
+ </mirror>

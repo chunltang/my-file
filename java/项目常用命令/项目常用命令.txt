@@ -1,0 +1,106 @@
+1.maven
+
+ mvn在项目根目录打jar包，j生成的jar在target目录下：
+mvn package   
+
+使用DockerFile构建镜像：
+mvn package docker:build 
+
+window下环境变量设置：
+MAVEN_HOME= E:\IntelliJ IDEA 2019.1.3\plugins\maven\lib\maven3 
+PATH=%MAVEN_HOME%\bin
+
+**************************************************************************************************************
+
+2.java
+
+指定端口启动项目：
+java -jar *.jar --server.port=8081  
+ 
+安装jdk:
+yum -y install java-1.8.0-openjdk*  
+
+设置环境变量：
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.161-0.b14.el7_4.x86_64 
+export PATH=$PATH:$JAVA_HOME/bin
+
+window环境变量设置：
+设置系统变量
+JAVA_HOME=E:\jdk-12.0.1_windows-x64_bin\jdk-12.0.1
+CLASSPATH=.;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar; 
+PATH=%JAVA_HOME%\bin;%JAVA_HOME%\jre\bin  window10这里要设置为两个
+**************************************************************************************************************
+
+3.docker
+
+安装：
+yum install docker
+
+启动服务并设置为开机启动：
+service docker start
+chkconfig docker on
+
+重启docker：
+systemctl restart docker   
+
+命令查看构建好的镜像：
+docker images   
+
+运行容器：
+docker run -p 8080:8080 -t springboot/spring-boot-docker  第一个端口是宿主机，第二个是docker的端口，-t后接的是查看images中名称获得
+docker run -i -t ubuntu /bin/bash                       启动一个容器
+docker run -i -t --rm ubuntu /bin/bash                  --rm表示容器退出后立即删除该容器
+docker run -t -i --name test_container ubuntu /bin/bash --name指定容器的名称，否则会随机分配一个名称
+docker run -t -i --net=host ubuntu /bin/bash            --net=host容器以Host方式进行网络通信
+docker run -t -i -v /host:/container ubuntu /bin/bash   -v绑定挂在一个Volume，在宿主机和Docker容器中共享文件或目录
+
+查看正在运行的镜像：
+docker ps   
+
+停止所有容器：
+docker stop $(docker ps -a -q)
+
+删除所有容器：
+docker rm $(docker ps -a -q)
+
+删除指定镜像(iamge):
+docker rmi 91411fa0021e(imageID)
+
+删除所有images：
+docker rmi $(docker images -q)
+
+查看docker版本：
+docker version
+
+查看docker信息：
+docker info
+
+下载镜像：
+docker pull ubuntu     会将Ubuntu这个仓库下面的所有镜像下载到本地repository(docker pull ubuntu:latest  下载某个镜像)
+docker pull library/hello-world   获取hello-world镜像
+
+进入容器：
+docker attach container_name/container_id
+
+启动或停止某个容器：
+docker start/stop container_id
+
+查找nginx镜像：
+docker search nginx
+
+在Dockerfile所在目录执行docker build创建镜像：
+Dockerfile文件内容：
+FROM openjdk:8-jdk-alpine
+VOLUME /tmp
+ADD spring-boot-docker-1.0.jar app.jar
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]   执行mvn package docker:build
+
+**************************************************************************************************************
+
+4.mysql
+
+启动mysql：
+net start mysql
+
+关闭服务:
+net stop mysql

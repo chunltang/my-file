@@ -1,0 +1,27 @@
+   /**mapתΪjavabean*/
+        public TaskQuestBean mapConvertBean(Map<String,Object> map){
+            TaskQuestBean bean=new TaskQuestBean();
+            try {
+                BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
+                PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+                for (PropertyDescriptor property : propertyDescriptors) {
+                    String key = property.getName();
+                    if(map.containsKey(key)){
+                        Object value=null;
+                        if(!key.equals("ruleMap")){
+                            value = map.get(key);
+                        }
+                        Method setter = property.getWriteMethod();
+                        setter.invoke(bean,value);
+                    }
+                }
+            } catch (IntrospectionException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+
+            return bean;
+        }

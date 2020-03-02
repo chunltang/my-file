@@ -1,0 +1,599 @@
+响应代码：200表示成功，3xx表示重定向，4xx表示客户端发送的请求有错误，5xx表示服务器端处理时发生了错误；
+
+window中提那家环境变量:set path=%path%;C:\python3
+
+linux中添加环境变量:PATH=$PATH:/usr/local/bin/python3
+
+在脚本底部添加以下命令就可以像shell脚本一样执行：#! /usr/bin/env python3  chmod +x *.py
+
+1.执行py文件 ：python *.py
+
+2.打印print()，用户输入input(),输出Output()
+
+3.大小写敏感
+
+4.布尔值：True，False 首字母大写
+
+5.除法：/ 表示精确除法，有余数 // 只取整数部分  % 只取余数部分
+
+6.编码：计算机内存中使用unicode编码，读取输入时转换成utf-8编码（可变长编码）
+
+7.ord()获取字符的整数表示，chr()把编码转换成对应字符
+
+7.encode('utf-8') 将字符串编码为utf-8的bytes  decode（'utf-8'）将bytes转字符串
+
+8.len() 计算字符串长度，bytes型则计算字节数
+
+9.列表list，有序的集合，像数组 list=[1,2,34] ,可以使用索引-1获取最后一个元素 len(list) list[-1]
+
+    arr.append('b')  #在最后追加       arr.insert(1,'c')  #指定位置插入
+
+    arr.pop() #删除末尾元素            arr.pop(1)  #删除指定位置元素       arr[1]=111  #直接赋值替换
+ 
+    arr.append(['a','b'])  print(arr[-1][1])  #相当于二维数组
+
+10.另外一种有序列表，叫元组：tuple 一旦初始化就不能修改，指元素的指向不能变，但指向对应值可以改变
+
+    classname=('a','b','c') 
+
+    tup=(1,)  #当只有一个元素时要加逗号tup=(1,)和tup_=(1)是不同的，tup_=(1)看做数学运算
+
+11.int(str)  将字符串转整数 
+
+12.range(num)  生成整数序列，在使用list()可以转化成list，生成的序列0<=n<num 
+
+13.循环，for var in list:   while  
+
+14.dict字典，相当于map键值对，极快的查询速度,相当于js对象的形式，键要加引号
+
+     keyv={'a':1,'b':2,'xx':3}      print('a' in keyv)   #判断键的存在      print(keyv['a'])
+
+     print(keyv.get('d'))  #不存在的键返回None
+
+     print(keyv.get('d',22))   #键不存在则返回默认值22
+
+15.set一组key的组合，但不存储value，key不能重复，使用list作为输入集合,无序的
+   
+     s=set([1,2,3,4])           s.add(5)
+
+     print(s)  #重读添加只保留一个          s.remove(1)  #删除
+
+16.list.sort() list排序     str.replace('a','A')   字符串替换
+
+17.定义函数def funname(params):
+  
+    参数类型检查isinstance()  not  pass   -if val is None
+
+
+
+===========================================================================
+
+交互模式下，使用变量_保存最后一次的结果
+
+使用id(obj) 查看对象的物理保存地址
+
+===========================================================================
+
+输入：input()  raw_input("shu ru:") 可以输入字符串
+
+===========================================================================
+
+sys模块提供标准输入sys.stdin、输出sys.stdout、错误输出sys.stderr
+
+
+===========================================================================
+
+dir(__builtins__) 查看模块信息
+
+===========================================================================
+
+格式化输出：
+
+d={'a':'aa','b':23}
+
+print 'she is %(a)d  and she is %(b)f' % d
+
+
+===========================================================================
+
+callable(str)  判断方法是否可用
+
+===========================================================================
+
+使用__doc__获取文档子串  str.__doc__
+
+===========================================================================
+
+以单一下划线开头的变量名(_x)不会被from module import * 语句引入  
+
+__x是类的本地变量
+
+__x__是系统变量名
+
+===========================================================================
+
+类型判断和转换：
+
+id() is  type()   is是判断两个的id（地址）是否相同
+
+文件类型工具：
+
+pipes，fifos，sockets
+
+类型转换:
+
+str() repr() format()  int() float()  list("this is a dog")  dict([("a",1)])  
+
+chr()将整数转成字符
+
+ord()将字符串转换为16进制字符
+
+hex()将整数转为16进制字符
+
+r"d23\dsa" 为原始字符串，不会转义
+
+u"ewdwe3\w" 为unicode编码的字符串
+
+==============================================================================
+
+__doc__:
+
+模块、类、方法的第一行为字符串，则可以使用__doc__属性查看
+
+==============================================================================
+
+序列操作：
+
+s[1:2] 
+
+s[::-1] -1为反序，步长为1
+
+s[1:3]=[1,2]
+
+s[1:3:2]=[2]
+
+del s[1]  
+
+del s[1:3:2] 删除元素
+
+del(s[1])
+
+max(seq) min(seq) sum(nums)
+
+any(x) 只要x中有一个不为空、0、False就返回True
+
+all(x) x中的所有元素均不为空、0、False才返回True ，all和any不适用字符串，空tuple和list返回true
+
+------列-----------------
+
+fruits=['apple','orange','peach']
+
+str='I want  some apples'
+
+any(element in str for element in fruits) 判断字符串中是否包含一个list里的元素
+
+---------------------------
+
+a in as 判断as中是否包含a元素
+
+
+=======================================================================
+
+字符串操作:
+
+s.captitalize() 首字母大写
+
+s.index(sub [,start[,end]]) 找到指定字符串sub首次出现的位置，否则报错
+
+s.join(t) 使用s作为分隔符连接序列t中的字符串
+
+s.lower() 转小写
+
+s.replace(old,new [,maxreplace]) 替换一个子字符串
+
+s.split(seq [,maxsplit]) 使用seq作为分隔符对一个字符串进行划分，maxsplit为划分的最大次数
+
+s.strip([chrs]) 删掉chrs开头和结尾的空白或字符
+
+s.upper()  转大写
+
+=========================================================================
+
+查看类包含的变量，方法等：
+
+print(','.join(dir(str)).replace(',','\n'))   dir(str)
+
+
+=========================================================================
+
+list:
+
+append() 添加一个元素  
+extend() 添加一个集合
+index()
+insert()
+count()
+pop()
+remove()
+reverse()
+sort()
+
+==========================================================================
+
+tuple:
+
+tup1='a','b','c',2
+
+add() 
+
+==========================================================================
+
+dict:
+
+d2=dict(name='tcl',age=23)
+
+copy()
+has_key()
+keys()
+get()
+items()
+fromkeys()
+values()
+update()
+iteritems()
+iterkeys()
+itervalues()
+copy()
+clear()
+
+zip('dfs','sw')=[('d', 's'), ('f', 'w')] 
+
+zip([1,2,3],[5,6,7])
+
+==========================================================================
+
+set:
+
+add()
+update()
+集合运算 & | - ^
+
+==========================================================================
+
+三元运算符:
+
+a=10 if 10>0 else 100
+
+==========================================================================
+
+copy模块：
+
+copy.deepcopy() 对象深度拷贝  会获取新的id值
+
+==========================================================================
+
+查看所有全局和局部变量:
+
+print locals(),globals()
+
+b={'b':21}
+
+eval('b+20',b) p1为字符串，p2为全局作用域，p3为局部作用域,返回执行结果
+
+eval('a+1',globals(),locals())
+
+__import__('os').system('dir')  获取目录下所有文件
+
+repr()与str()类似，可以使用eval(repr(obj))==obj,返回原对象   eval()s执行表达式
+
+
+==========================================================================
+
+列表解析:
+
+d=[i for i in os.listdir('.') if i.endswith('f')]
+
+生成器表达式:
+
+g=(i for i in range(100)) g.next()
+
+
+enumerate(obj)  返回偏移量和元素(1,'a')
+
+==========================================================================
+
+文件对象:  a+ w+ r+
+
+file=open("path","mode")
+
+file.read（10）
+
+file.readlines()
+
+file.tell()   返回文件指针的当前位置
+
+file.seek(int)  设置文件指针位置
+
+file.next()  返回下一行
+
+file.close()
+
+file.write()
+
+
+==========================================================================
+
+os模块:
+
+chdir() 改变工作目录
+
+chroot()  设定当前进程的根目录
+
+listdir()
+
+mkdir()
+
+makedirs('/x/y/z') 创建多级目录 
+
+getcwd() 获取当前工作目录
+
+rmdir()
+
+os.symlink() 
+
+utime() 跟新时间戳
+
+stat() 返回文件状态信息
+
+rename() 重命名
+
+os.path.dirname(path)  获取路径目录
+
+os.path.basename(path) 获取路径基名
+
+os.path.join(dir,basename)
+
+os.path.split() 返回dirname()和basename()的元组
+
+os.path.splitext(filename) 返回路径名和后缀的元组
+
+os.path.getatime()
+
+os.path.getctime()
+
+os.path.getmtime()
+
+os.path.getsize() 返回文件大小
+
+os.path.exists() 判断文件是否存在
+
+os.path.isdir()
+
+os.path.isfile()
+
+os.path.islink() 是否为符号连接
+
+os.path.ismount() 是否为挂载点
+
+os.path.isabs() 判断是否为绝对路径
+
+------------------------------------------------------------------------------
+
+对象持久存储:
+
+pickle:
+
+   dump(obj,file) dumps(obj)->string   load(file)  loads(string)->obj
+
+marshal
+
+DBM接口
+
+shelve模块
+
+全局变量:global
+
+l1[:].pop()  不会改变原始值
+
+python闭包
+
+
+-----------------------------------------------------------------------------
+
+函数：
+
+位置参数 fun(a,b,c)  l1=[1,2,3]  可以这样调用传参  fun(*l1)
+
+关键字参数 fun(0,b=1,2)
+
+默认参数  def fun(a=1,b,c=2)
+
+可变参数 *x收集位置参数  **x收集关键字参数  fun(1,2,3,a=4,b=5)
+
+匿名函数 :fun7=lambda x,y:x-y   fun7(1,2)  冒号后是表达式，可以是三元，但不能接代码块，非表达式， print x,y 就是错误的吗
+
+        lambda 返回的是一个函数，支持默认参数
+ 
+        la1=[(lambda x:x*3),(lambda y:y*2)]  for i in la1:i(2)
+
+函数式编程：
+
+   filter(func,seq)  返回seq中符合fnc函数的序列
+
+        l1=[1,2,3,4,6,23]
+        def f1(a):
+            if a>3:
+              return True
+            else:
+              return False
+
+         filter(f1,l1)
+
+
+   map(func,sql1[,seq2])  func作用在每个元素上，返回一个序列
+      
+         l1=[1,2,3,4,6,23]
+         def f2(x):
+            return 2*x
+       
+         map(f2,l1)
+
+   reduce(func,seq1[,init])  func每次拿序列中两个元素，并返回一个值与seq中的下一个值调用func函数，像递归
+ 
+         l1=[1,2,3,4,6,23]
+         def f4(x,y):
+            return x+y
+
+         reduce(f4,l1)
+         reduce(f4,l1,100)  设第一个元素为100，而不是l1中的第一个元素
+
+
+闭包：将函数当做对象返回
+
+         def printx(x):
+            def printy():
+              print x     带外部变量
+            return printy 返回的是函数
+
+
+         f1=printx(1)
+         f1.__closure__[0].cell_contents  返回外部参数的值
+
+
+装饰器:decorator   带参数的装饰器一般会生成闭包，
+
+       装饰器本身是一个函数，用于装饰其他函数，增强被装饰函数的功能，一般接收一个函数作为参数，像java中的动态代理
+
+
+def deco(func):
+    def wrapper():
+        print("-------begin---------")
+        func()                               #使用外部参数，形成闭包
+        print("----------end-----------")
+    return wrapper                           #装饰器返回一个函数
+
+@deco
+def func1():
+    print("to be zhiixng!")
+
+func1()
+
+result=deco(func1)()   #不使用注释的形式，直接使用
+
+
+生成器:generator  yield
+
+         def gen1(x):
+           y=0
+           while y<x:
+              yield y   相当于return返回y，调用一次，这里暂停一次
+              y+=1      下次调用从这里开始执行
+
+
+递归：
+
+>>> def xx(n):
+...     if n<=1:
+...         return 1
+...     else:
+...         return n*xx(n-1)
+
+
+协程：
+
+   与生成器类似,使用yield关键字,通常出现在表达式右边,接收数据使用.send(datum)，可以不接受数据或传出数据，yield是一种流程控制工具
+
+   协程可以吧控制器让步给中心调度程序，从而激活其他的协程
+
+
+def simple_coroutine():
+    print("->start")
+    x=yield[,expression]      x为接收的数据，expression为要返回的数据
+    print("->recived",x)
+
+sc=simple_coroutine()
+
+next(sc)                          使用next()或.send(None)启动协程
+sc.send("zhexiao")
+
+协程有4个状态，可以使用import inspect inspect.getgeneratorstate(sc)获取状态
+
+-----------------------------------------------------------------------
+
+类
+
+>>> class sysname():
+...     def __init__(self,name):
+...         self.name=name
+...     def sys(self):
+...         print self.name
+
+
+使用类或实列的__dict__属性或dir()函数获取实行集合
+
+c.__name__  类名(字符串)
+
+c.__doc__ 文档字符串
+
+c.__bases__  类C的所有父类构成的元组
+
+c.__dict__  C的属性
+
+c.__module__  C定义所在的模块
+
+c.__class__  实列C对应的类
+
+issubclass(testclass,object)  判断一个类是否由另一个类派生
+
+isinstance(obj,class)  判断一个对象是否是给定类的实列
+
+hasattr(obj,'attr') 判断一个对象是否拥有指定的属性  hasattr(t,'data')  getattr()  setattr()  delattr()  
+
+super()
+
+
+----------------------------------------------------------------------
+
+模块 ： help("modules")  查看所有模块名称列表
+
+
+将自定义模块导入：先将.py文件的路径加入sys.path.append(path) 中
+
+python包  必须有__init__.py文件，内容可以为空
+
+distutils模块能够帮助完成模块或程序的发布  from distutils.core import setup
+
+    setup(name,version,author,author_mail,py_modules,url,description)
+
+    在主目录中执行 python setup.py sdist
+
+第三方模块的默认安装路径为:site-packages
+
+
+-------------------------------------------------------------------
+
+异常：
+
+>>> try:
+...     1/0
+... except Exception,e:    except (e1,e2),reson:
+...     print 'error',e
+    except:
+        不带异常类的，捕获一切异常
+    else:
+        没有异常发生时，else才会执行
+    finally:
+
+触发异常:
+
+    raise(e,args,trackback)     baseException
+
+断言：
+   
+    assert condition[,expression]
+
+模块测试：
+
+    doctest.testmod()  模块、类、方法的第一行为字符串，则为文档字符串，调用__doc__获取
+
+    文档字符串可以是交互测试命令

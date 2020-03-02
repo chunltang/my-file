@@ -1,0 +1,116 @@
+===================================================================================================================
+             调优命令及参数介绍链接：http://www.ityouknow.com/jvm/2017/09/03/jvm-command.html
+===================================================================================================================
+1.查看伊甸园、JVM年轻代、老年代使用占比，yong gc、full gc的次数及时间：
+jstat -gcutil -h3 14524 1s：  
+进入jdk的bin目录执行jstat命令,14524代表进程号，-h3代表每3行显示标题
+
+jstat [option] LVMID [interval] [count]：
+[option] : 操作参数
+LVMID : 本地虚拟机进程ID
+[interval] : 连续输出的时间间隔
+[count] : 连续输出的次数
+
+[option]参数：
+class ：class loader的行为统计。Statistics on the behavior of the class loader.
+compiler：HotSpt JIT编译器行为统计。Statistics of the behavior of the HotSpot Just-in-Time compiler.
+gc：垃圾回收堆的行为统计。Statistics of the behavior of the garbage collected heap.
+gccapacity：各个垃圾回收代容量(young,old,perm)和他们相应的空间统计。Statistics of the capacities of the generations and their corresponding spaces.
+gcutil：垃圾回收统计概述。Summary of garbage collection statistics.
+gccause：垃圾收集统计概述（同-gcutil），附加最近两次垃圾回收事件的原因。Summary of garbage collection statistics (same as -gcutil), with the cause of the last and
+gcnew：新生代行为统计。Statistics of the behavior of the new generation.
+gcnewcapacity：新生代与其相应的内存空间的统计。Statistics of the sizes of the new generations and its corresponding spaces.
+gcold：年老代和永生代行为统计。Statistics of the behavior of the old and permanent generations.
+gcoldcapacity：年老代行为统计。Statistics of the sizes of the old generation.
+gcpermcapacity：永生代行为统计。Statistics of the sizes of the permanent generation.
+printcompilation：HotSpot编译方法统计。HotSpot compilation method statistics.
+
+S0C : survivor0区的总容量
+S1C : survivor1区的总容量
+S0U : survivor0区已使用的容量
+S1U : survivor1区已使用的容量
+EC : Eden区的总容量
+EU : Eden区已使用的容量
+OC : Old区的总容量
+OU : Old区已使用的容量
+PC	当前perm的容量 (KB)
+PU	perm的使用 (KB)
+YGC : 新生代垃圾回收次数
+YGCT : 新生代垃圾回收时间
+FGC : 老年代垃圾回收次数
+FGCT : 老年代垃圾回收时间
+GCT : 垃圾回收总消耗时间
+*********************************************************************************************************************
+
+2.window下查看JVM进程号：
+wmic process where caption="java.exe" get processid,caption,commandline /value
+
+*********************************************************************************************************************
+
+3.查看JVM里面所有进程的具体状态, 包括进程ID，进程启动的路径
+jsp命令
+-l : 输出主类全名或jar路径
+-q : 只输出LVMID
+-m : 输出JVM启动时传递给main()的参数
+-v : 输出JVM启动时显示指定的JVM参数
+
+*********************************************************************************************************************
+
+4.实时查看和调整虚拟机运行参数，观察运行中的java程序的运行环境参数：参数包括Java System属性和JVM命令行参数
+jinfo [option] [args] LVMID
+[option]参数：
+-flag : 输出指定args参数的值
+-flags : 不需要args参数，输出所有JVM参数的值
+-sysprops : 输出系统属性，等同于System.getProperties()
+
+*********************************************************************************************************************
+
+5.打印出某个java进程（使用pid）内存内的，所有‘对象’的情况（如：产生那些对象，及其数量）
+用于生成heap dump文件，查询finalize执行队列、Java堆和永久代的详细信息，如当前使用率、当前使用的是哪种收集器等
+jmap [option] LVMID
+
+dump : 生成堆转储快照
+finalizerinfo : 显示在F-Queue队列等待Finalizer线程执行finalizer方法的对象
+heap : 显示Java堆详细信息
+histo : 显示堆中对象的统计信息
+permstat : to print permanent generation statistics
+F : 当-dump没有响应时，强制生成dump快照
+
+*********************************************************************************************************************
+
+6.jstack用于生成java虚拟机当前时刻的线程快照
+jstack [option] LVMID
+[option]参数：
+-F : 当正常输出请求不被响应时，强制输出线程堆栈
+-l : 除堆栈外，显示关于锁的附加信息
+-m : 如果调用到本地方法的话，可以显示C/C++的堆栈
+
+*********************************************************************************************************************
+
+7.与jmap搭配使用，用来分析jmap生成的dump，jhat内置了一个微型的HTTP/HTML服务器，生成dump的分析结果后，可以在浏览器中查看
+jhat [dumpfile]
+
+*********************************************************************************************************************
+
+8.gc日志相关参数
+-XX:+PrintGC 输出GC日志
+-XX:+PrintGCDetails 输出GC的详细日志
+-XX:+PrintGCTimeStamps 输出GC的时间戳（以基准时间的形式）
+-XX:+PrintGCDateStamps 输出GC的时间戳（以日期的形式，如 2017-09-04T21:53:59.234+0800）
+-XX:+PrintHeapAtGC 在进行GC的前后打印出堆的信息
+-Xloggc:../logs/gc.log 日志文件的输出路径
+
+*********************************************************************************************************************
+
+9.JDK8-JVM启动参数设置
+-XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=128m -Xms1024m -Xmx1024m -Xmn256m -Xss256k -XX:SurvivorRatio=8 -XX:+UseConcMarkSweepGC 
+
+  -XX:MetaspaceSize=128m （元空间默认大小） 
+  -XX:MaxMetaspaceSize=128m （元空间最大大小） 
+  -Xms1024m （堆默认大小） 
+  -Xmx1024m （堆最大大小） 
+  -Xmn256m （新生代大小） 
+  -Xss256k （棧最大深度大小） 
+  -XX:SurvivorRatio=8 （新生代分区比例 8:2） 
+  -XX:+UseConcMarkSweepGC （指定使用的垃圾收集器，这里使用CMS收集器） 
+  -XX:+PrintGCDetails （打印详细的GC日志）

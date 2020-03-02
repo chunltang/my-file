@@ -1,0 +1,68 @@
+1.基本指令：
+(1)、ng-app=" "  定义angularJS的使用范围；
+
+(2)、ng-init="变量=值;变量='值'"  初始化变量的值，有多个变量时，中间用分号隔开；
+
+	<div ng-app="" ng-init="quantity=1;cost=5">
+	<p>总价： {{ quantity * cost }}</p>
+	</div>
+
+(3)、ng-model="变量"  定义变量名；
+
+	<div ng-app="" ng-init="quantity=1;price=5">
+	<h2>价格计算器</h2>
+	数量： <input type="number"    ng-model="quantity">
+	价格： <input type="number" ng-model="price">
+	<p><b>总价：</b> {{ quantity * price }}</p>
+	</div>
+
+(4)、ng-bind="变量"  绑定变量名，获取该变量的数据。这里的变量就是第3条的变量名。但是一般都用双重花括号来获取变量的值，比如：{{变量}}。
+
+	<div ng-app="" ng-init="quantity=1;cost=5">
+	<p>总价： <span ng-bind="quantity * cost"></span></p>
+	</div>
+
+(5).HTML5 允许扩展的（自制的）属性，以 data- 开头。
+AngularJS 属性以 ng- 开头，但是您可以使用 data-ng- 来让网页对 HTML5 有效
+
+(6).ng-repeat 指令会重复一个 HTML 元素
+
+	<div ng-app="" ng-init="names=['Jani','Hege','Kai']">
+	  <p>使用 ng-repeat 来循环数组</p>
+	  <ul>
+		<li ng-repeat="x in names">
+		  {{ x }}
+		</li>
+	  </ul>
+	</div>
+
+***************************************************************************************************************
+
+2.AngularJS 模块（Module） 定义了 AngularJS 应用。
+AngularJS 控制器（Controller） 用于控制 AngularJS 应用。 
+ng-app指令指明了应用, ng-controller 指明了控制器。
+
+AngularJS 模块
+var app = angular.module('myApp', []);
+
+AngularJS 控制器
+app.controller('myCtrl', function($scope) {
+    $scope.firstName= "John";
+    $scope.lastName= "Doe";
+});
+
+***************************************************************************************************************
+
+3.AngularJS 对象
+
+	<div ng-app="" ng-init="person={firstName:'John',lastName:'Doe'}">
+	<p>姓为 {{ person.lastName }}</p>
+	</div>
+	
+***************************************************************************************************************
+
+4.AngularJS 数组
+
+	<div ng-app="" ng-init="points=[1,15,19,2,40]">
+	<p>第三个值为 {{ points[2] }}</p>
+	</div>

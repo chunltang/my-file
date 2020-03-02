@@ -1,0 +1,327 @@
+java集合类：
+
+
+
+1.Set：成员不能重复
+
+实现类：hashset,treeset,linkedhashset
+
+遍历方式:hashset外部无序遍历
+
+        hashset为快速查询设计的
+
+        treeset外部有序遍历，成员要求实现caparabale接口或者用Comparator构造TreeSet，附加实现SortedSet，支持子集等要求顺序的操作
+		
+		linkedhashset外部按成员的插入顺序遍历成员
+		
+
+set如何保证不重复：最终的判断是根据equals()，hashset的底层采用hashmap来存放数据，需要计算hashcode值
+		
+		
+
+
+2.List提供基于索引的对成员的随机访问
+
+实现类：arraylist，linkedlist，vector
+
+遍历方式：arraylist提供快速的基于索引的成员访问，对尾部成员的增加和删除支持较好；
+
+          linkedlist对列表中任何位置的成员的增加和删除支持较好，但对基于索引的成员访问支持性较差
+		  
+		  
+vector和arraylist的同异：
+
+    vector是线程安全的，arraylist是线程不安全的
+	
+	数据增长时，vector默认增长为原来的一倍，arraylist为原来的一半
+		  
+
+同异： arraylist基于数组，具有较高的查询速度，linkedlist基于双向循环列表，具有较快的添加或者删除的速度   都实现了collection接口
+
+list的remove可以根据元素或者索引删除元素
+
+使用for循环删除元素的陷阱：
+
+    List objects = new ArrayList();
+	objects.add(1);
+	objects.add(2);
+	objects.add(3);
+	
+    for (int i = 0; i < objects.size(); i++) {  //运行后留下第二个元素
+		objects.remove(i);
+	}
+	
+	 for (int i = 0; i < objects.size(); i++) { //正确删除
+		objects.remove(i);
+		i-=1;
+	}
+	
+
+
+
+
+3.Map：保存键值对成员，基于键值操作，compareTo或compare方法对键排序
+
+实现类：hashmap，treemap，linkedhashmap，identityhashmap，weakhashmap
+
+TreeMap是接口SortedMap的实现,TreeMap提供了按键进行排序的功能
+
+遍历方式：treemap支持对键有序的遍历，建议使用先用hashmap增加和删除，最后从hashmap生成treemap，附加实现了sortedmap接口，键成员要求实现caparabale接口或者用Comparator构造TreeMap
+
+          linkedhashmap保留键的插入顺序，用equals方法检查键和值得相等性
+		  
+		  identityhashmap使用==来检查键和值的相等性
+		  
+		  weakhashmap其行为依赖垃圾回收线程，没有绝对理由则少用
+		  
+		
+1)hashmap,hashtable（使用sychroniezd同步）,concurrenthashmap
+
+hashmap和hashtable的区别：
+
+     hashmap继承了abstractmap，二hashtable继承了Dictinonary
+
+     hashmap是非线程安全的，hashtable是线程安全的
+	 
+	 hashmap的键和值都允许由null值存在，而hashtable不行
+	 
+	 因为线程线程的安全的问题，hashmap效率比hashtable的要高
+	 
+	 hashtable使用enumeration，hashmap使用iterator获取迭代对象
+	 
+	 
+concurrenthashmap是线程安全的hashmap的实现，加锁的方式是基于lock操作的，sychroniezd锁住的都是对象整体，lock锁住不是整个对象，concurrenthashmap可以满足concurrentLevel个线程并发无阻塞的操作集合对象
+
+    concurrenthashmap构造函数的三个参数分别为：数组的初始化大小，装载因子，和concurrentLevel
+	
+	concurrenthashmap基于concurrentLevel划分了多个Segment来对key-value进行存储，从而避免每次锁定整个数组，在默认的情况下，允许16个线程并发无阻碍的操作整个集合对象，尽可能的减少并发时的阻塞现象，在多线程的环境中，concurrenthashmap比hashtable的性能更好
+	 
+	 
+java数据存储方式最底层的两种结构，一种是数组，另一种是链表
+
+数组的特点：连续空间，寻址迅速，但是在删除或者添加元素的时候要有较大幅度的移动，所以查询快，增删较慢
+
+链表：与数组相反，空间不连续，寻址困难，增删元素只需要修改指针，所以查询慢，增删快
+
+哈希表：综合了数组和链表的优势，哈希表具有较快的查询速度（常量级），及较相对较快的增删速度，所以很适合在海量数据的环境中使用，一般实现哈希表的方式采用‘拉链式’，可以理解为‘链表的数组’
+
+哈希表可以理解为数组+链表组成的，元素按照hahs(key)%len的规则存储到数组中
+
+    /**
+     * map键转为大写
+     * */
+    public void toLowerCase(Map<String,Object> map){
+        if(MapUtils.isEmpty(map)){
+            return;
+        }
+        Set<String> keys=new HashSet<>(map.keySet());
+        keys.stream().forEach(each->{
+            Object value = map.get(each);
+            map.remove(each);
+            map.put(each.toUpperCase(),value);
+        });
+    }
+
+
+
+4.collections集合工具类:
+
+    1.生成只读单值集合
+	
+	2.生成线程安全的同步集合，如Collections.synchronizedSortedMap()
+	
+方法：
+   
+    frequenct()-- Collections.frequency(objects,2); 返回指定colletion中等于指定对象的元素数
+	
+	lastIndexOfSubList(indexOfSubList)-- Collections.lastIndexOfSubList(objects, target);返回target列表在objects中最后一次出现的位置，没有则返回-1
+	
+	max()-- Collections.max(objects);根据元素的自然顺序，返回最大的元素，可实现comparator接口
+	
+	replaceAll();-- 替换集合中某一指定值
+	
+排序:
+
+    reverse()对集合翻转
+	
+	shuffle()对集合的元素随机排列
+	
+	sort()
+	
+	swap()交换某两个指定下标元素在集合中的位置
+	
+	rotate()循环移动    Collections.rotate(objects,-1); 所有元素左移一位
+	
+	
+	
+Comparator和Comparable的使用场景:
+
+1).二者都可以实现对象的排序，不论是Arrays.sort还是Collections.sort排序
+
+2).实现Comparable接口的类，需要预先知道该类将要进行排序，需要排序的类实现Comparable接口，是一种“静态绑定的排序”
+
+   实现comparator接口的类不需要预先知道，设计者无需事先为排序的类实现任何接口，实现算法和数据的分离，是一种“动态绑定排序”，可以实现多种排序标准，如升序、降序等
+   
+   Comparator接口有两个抽象方法compare和equals，而comaparable只有compareTo
+   
+   Arrats.sort和Collections.sort都可以实现Comparator接口
+   
+   
+   public class SortTest {
+
+    public static void main(String[] args) {
+        SortTest test=new SortTest();
+        User u1=test.new User("AA",23);
+        User u2=test.new User("BB",25);
+        ArrayList<User> list = new ArrayList<>();
+        list.add(u1);
+        list.add(u2);
+        Collections.sort(list);
+        System.out.println(list);
+        for (User user : list) {
+            System.out.println(user.getName()+"-"+user.getAge());
+        }
+		
+		   Collections.sort(list, new Comparator<User>() {//实现Comparator接口
+            @Override
+            public int compare(User o1, User o2) {
+                return o1.getAge()-o2.getAge();
+            }
+        });
+
+        for (User user : list) {
+            System.out.println(user.getName()+"-"+user.getAge());
+        }
+    }
+
+
+    class User implements Comparable{ //实现Comparable接口
+        private String name;
+        private int age;
+
+        public User(String name,int age){
+            this.name=name;
+            this.age=age;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            return -(this.getAge()-((User)o).getAge());   //前面加减号为降序，不加为升序
+        }
+    }
+}
+   
+   
+   
+
+举例：
+
+hashmap按值排序，给定一个数组，求出每个数据出现的次数并按赵次数由大到小排序。使用Collection的sort方法对hashmap的值排序
+
+public class HashMapTest {
+
+    public static void main(String[] args) {
+        int data[]={2,5,2,3,5,3,2,5,3,4,7,4,8,0,6,10};
+        Map<Integer,Integer> map=new HashMap<Integer, Integer>();
+        for (int i : data) {
+             if(map.containsKey(i)){
+                 map.put(i,map.get(i)+1);
+             }else{
+                 map.put(i,1);
+             }
+        }
+
+        List<Map.Entry<Integer,Integer>>  list=new ArrayList<Map.Entry<Integer,Integer>>(map.entrySet());//从现有集合转为List集合
+        Collections.sort(list, new Comparator<Map.Entry<Integer, Integer>>() {//使用工具类Collections.sort排序
+            @Override
+            public int compare(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2) {
+                return o2.getKey()-o1.getValue();  //倒序，那要比较的值(o2)和当前值(o1)比较，大于0往前，为倒序
+            }
+        });
+
+        for (Map.Entry<Integer, Integer> entry : list) {
+            System.out.println(entry.getKey()+"-"+entry.getValue());
+        }
+
+    }
+}
+
+
+一千万随机数据中，计算出现次数最多的数和次数
+
+public class BigDataTest {
+
+    public static void main(String[] args) throws InterruptedException {
+        long t = System.currentTimeMillis();
+        List<Integer> list=new ArrayList<>();
+        Random random = new Random();
+        final Map<Integer,Integer> map=new ConcurrentHashMap<>(16,0.8f,20);
+        Vector<Thread> vector=new Vector<>();
+        for (int i = 1; i < 10000001; i++) {
+            list.add( random.nextInt(1000));
+            if(i%500000==0){
+                final List<Integer> integers = new ArrayList<>(list);
+                Thread t1=new Thread(){
+                    public void run(){
+                        for (Integer i : integers) {
+                            if(map.containsKey(i)){
+                                map.put(i,map.get(i)+1);
+                            }else{
+                                map.put(i,1);
+                            }
+                        }
+                    }
+                };
+                vector.add(t1);
+                t1.start();
+                System.out.println(list.size()+"i="+i);
+                list.clear();
+            }
+        }
+        for (Thread thread : vector) {
+            thread.join();
+        }
+
+        ArrayList<Map.Entry<Integer, Integer>> arrayList = new ArrayList<Map.Entry<Integer, Integer>>(map.entrySet());
+        Collections.sort(arrayList, new Comparator<Map.Entry<Integer, Integer>>() {
+            @Override
+            public int compare(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2) {
+                return o2.getValue()-o1.getValue();
+            }
+        });
+
+        ArrayList<Map.Entry<Integer, Integer>> entries = new ArrayList<>(arrayList);
+
+        for (int i = 0; i < 100; i++) {
+            Map.Entry<Integer, Integer> entry = entries.get(i);
+            System.out.println(entry.getKey()+"-"+entry.getValue());
+        }
+
+        long t2 = System.currentTimeMillis();
+        System.out.println("消耗时间为:"+(t2-t)+"毫秒");
+    }
+}
+
+
+5.链表
+  链表结构：链表是一系列的节点组成的，通常包含表头，节点1，节点2...节点n，其中节点又包含数据内容(引用或者基本数据类型)和下个节点的存储地址，链表不占用连续的内存，这样一个链表只是向外部暴露第一个头节点，所以只要知道头节点就知道剩余的节点，头节点不存储数据，每次查询时都从第一个开始从头查一遍，所以查询比较麻烦。
+  
+  相当于说：arrayList集合中的索引是标识出来的，而LinkedList集合中的索引是隐身的，只能一个接着一个的找，这样也就理解linkedList集合中也有索引，为什么查询效率就比arrrayList低的原因了。
+  
+  双向链表：是一种对称结构，它克服了单向链表上指针单向性的缺点，其中每一个节点即可向前引用，也可以向后引用，这样可以更方便的插入、删除数据元素。由于双向链表需要同时维护两个方向的指针，因此添加节点、删除节点时指针维护成本更大。但双向链表具有两个方向的指针，因此可以向两个方向搜索节点，因此双向链表在搜索节点、删除指定索引处节点时具有较好的性能。

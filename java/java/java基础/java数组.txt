@@ -1,0 +1,42 @@
+1.java数组
+
+java.util.Arrays:是以一个算法类，主要是辅助数组类实现一些排序、搜索等功能，同时支持数组到List的转换
+
+
+int类型的数组是个特列，在转化为list的时会把数组当成list里的一个元素，可以使用integer类型的数组代替
+
+排序：
+
+     Arrays.sort()  只有升序，没有降序
+	 
+	 对于基本数据类型采用DualPivotQuicksort(多路快排)进行排序，对于引用类型的数组，采用MergeSort(归并排序)进行排序
+	 
+	 数组转为List后是一个定长的list，不能add和remove，转换后的ArrayList并非我们常用的java.util.ArrayList类，而是Arrays类的一个内部类，因为继承了AbstracList，所以可以和list相互转换
+	 
+	 
+
+数组拷贝：
+
+    arrays.copyOf()
+	
+	arrays.copyOfRange()拷贝指定范围的数组
+	
+	返回一个全新的数组，可以传入一个参数来定义新数组的长度，如果传入参数来定义新数组的长度小于原数组的长度，则直接把原来数组多余部分减掉，如果大于，则补充默认值
+	
+	
+
+数组定位查找：要先排序在查找，若果有多个，不能确定找到的是哪一个，查找元素存在，在返回索引，若果不存在，则返回(-插入点-1)的值
+
+    Arrays.binarySearch(arr,8)
+	
+	
+
+数组打印:
+
+   Arrays.toString(arr)
+   
+   
+ 
+查看数组中是否有特定值:
+
+   Arrays.asList(arr).contains(8)

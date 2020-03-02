@@ -1,0 +1,121 @@
+1.服务端代码
+
+File file=new File(path);
+String filename=file.getName();
+response.addHeader("Content-Disposition","attachment;filename="+filename);
+response.addHeader("Content-Length",""+file.length());
+response.setContentType("application/x-msdownload");  //	response.setContentType("application/octet-stream");
+InputStream fis=new FileInputStream(file);
+byte buffer[]=new byte[1024];
+ServletOutputStream outputStream = response.getOutputStream();
+int n;
+while((n=fis.read(buffer))!=-1){
+		outputStream.write(buffer,0,n);
+	}
+outputStream.close();
+fis.close();
+
+
+
+
+File file=new File(path);
+String filename=file.getName();
+//String ext=filename.substring(filename.lastIndexOf(".")+1);
+InputStream fis=new BufferedInputStream(new FileInputStream(path));
+byte[] buffer=new byte[fis.available()];
+fis.read(buffer);
+fis.close();
+response.reset();
+response.addHeader("Content-Disposition","attachment;filename="+filename);
+response.addHeader("Content-Length",""+file.length());
+response.setContentType("application/x-msdownload");
+OutputStream toClient=new BufferedOutputStream(response.getOutputStream());
+response.setContentType("application/octet-stream");
+toClient.write(buffer);
+toClient.flush();
+toClient.close();
+
+
+2.前端代码
+$.download=function(url,method,filedir){
+    $('<form action="'+url+'" method="'+(method||"post")+'">'+'<input type="text" name="filePath" value="'+filedir+'"/>'+'</form>').appendTo("body").submit().remove();
+}
+
+//不能使用ajax下载文件，ajax方式请求的数据只能存在javascript内存空间，可以通过javascript访问，但无法保存到硬盘
+//模拟表单提交同步方式下载文件，能够弹出保存文件对话框，ajax方式下载文件时无法触发浏览器打开保存文件对话框，也就无法将下载的文件保存到硬盘上
+function getExportData(params){
+    var data=getQueryParams(0,params.exportNum);
+    data=JSON.stringify(data);
+    params.exportFieldsData=params.exportFieldsData.replace(/\'/g,"\\'").replace(/\"/g,"'"); //当action传json数据时，可能传不过去，需要对单引号、双引号转义
+    data=data.replace(/\'/g,"\\'").replace(/\"/g,"'");
+    var url=path + "/jkzkstat/TelecomCtrlAction!export.action";
+    var action='<form action="'+url+'" method="post">'+
+        '<input type="text" name="fileName" value="'+params.fileName+'"/>'+
+        '<input type="text" name="fileType" value="'+params.fileType+'"/>'+
+        '<input type="text" name="exportNum" value="'+params.exportNum+'"/>'+
+        '<input type="text" name="exportFieldsData" value="'+params.exportFieldsData+'"/>'+
+        '<input type="text" name="queryParams" value="'+data+'"/>'+
+        '<input type="text" name="type" value="0"/>'+
+        '</form>';
+    $(action).appendTo("body").submit().remove();
+}
+
+下载：$.download(path + '/jkzkmanage/wxAction!voiceDown.action',"post","filePath")
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+使用action表单不能获取回调，使用jquery.fileDownload.js实现下载
+
+$.fileDownload(url,{
+        httpMethod:"POST",
+        data:{
+            fileName:params.fileName,
+            fileType:params.fileType,
+            exportNum:params.exportNum,
+            exportFieldsData:params.exportFieldsData,
+            queryParams:data,
+            type:"0"},
+        prepareCallback:function () {
+            
+        },
+        successCallback:function () {//服务端需要设置 response.setHeader("Set-Cookie","fileDownload=true;path=/");不然successCallback回调函数失效
+            $.Honeycomb.instantTip().close();
+        },
+        failCallBack:function () {
+            $.Honeycomb.instantTip({type: 'warn', message: "导出异常"});
+        }
+    })
+	
+	public void exportFile(HttpServletResponse response) throws IOException {
+        File file = new File(this.filePath);
+        response.setHeader("Set-Cookie","fileDownload=true;path=/");//服务端需要设置 response.setHeader("Set-Cookie","fileDownload=true;path=/");不然successCallback回调函数失效
+        response.addHeader("Content-Disposition", "attachment;filename=" + file.getName());//要指定文件名，不然下载的不是文件
+        response.addHeader("Content-Length", "" + file.length());
+        response.setContentType("application/x-msdownload");
+        InputStream fis = null;
+        OutputStream os = null;
+        int n;
+        byte buffer[] = new byte[1024];
+        try {
+            try {
+                fis = new FileInputStream(file);
+                os = response.getOutputStream();
+                while ((n = fis.read(buffer)) != -1) {
+                    os.write(buffer, 0, n);
+                }
+            } catch (IOException e) {
+                ArgoLog.debug("文件下载异常!", modelName);
+            }
+        } finally {
+            if (null != os) {
+                os.flush();
+                os.close();
+            }
+            if (null != fis) {
+                fis.close();
+            }
+        }
+    }
+	
+-----------------------------------------------------------------------------------------------------------------------------------------------

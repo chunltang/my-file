@@ -1,0 +1,32 @@
+java异常:
+
+异常分为两类:Error和exception，error是程序无法处理的错误
+
+Exception是程序可以处理的类，分为非运行时异常和运行时异常
+
+
+在try中return，finally也会执行
+
+尽量使用try/finally和try/catch嵌套
+try{
+	try{
+	 f.read()
+	}finally{
+	 f.close()
+	}
+}catch(){}
+
+
+自定义异常处理器：
+
+   继承Exception和RuntimeException
+   
+   public class NotSupportStrExcetion extends RuntimeException{
+    private String message;
+
+    public NotSupportStrExcetion(){}
+
+    public NotSupportStrExcetion(String message){
+        super(message);
+    }
+}

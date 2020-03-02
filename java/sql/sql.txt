@@ -1,0 +1,326 @@
+删除重复数据：
+delete from jk_fanting_statistics where ctid in (
+select ctid  from (select * from( select *,row_number()over(PARTITION by taskid,zkbegintime,zkno order by zkbegintime) yy,ctid from  jk_fanting_statistics where zkbegintime>'2019-05-14 00:00:00') t
+) g where g.yy=2 )
+
+
+GP库： port:5432;hostName:CS-4-178;userName:custommodel;passWd:Passw0rd;dbName:custommodel
+
+  psql -h CS-4-178 "dbname=custommodel user=custommodel password=Passw0rd  port=5432" -c "select * from base_account_basic 
+
+       where account_type=1010002"  gp库连接查询
+
+  select DISTINCT trim(net_name) from jk_net_dispatch_detail where zk_id='283277' 去重去空格
+
+---------------------------------------------------------------------------
+
+with和case when的使用：
+
+WITH d as(SELECT
+		b.send_request_unit,
+		LOCATION,
+		COUNT (A .zk_request_id) cnt
+	FROM
+		JK_ZK_RECORD A
+	JOIN JK_ZK_REQUEST_LOG b ON A.zk_request_id = b.zk_request_id
+	WHERE
+		A.zk_status IN ('10', '11') 
+	GROUP BY
+		b.send_request_unit,
+		LOCATION
+),e as(SELECT
+		f.send_request_unit,
+		f.cnt local_cnt,
+		G .cnt remote_cnt
+	FROM
+		(
+			SELECT
+				*
+			FROM
+				d
+			WHERE
+				LOCATION =CASE WHEN (select count(*)  from d where LOCATION = '0')>(select count(*) from d where LOCATION = '1') then '0' else '1' END 
+		)  
+	FULL JOIN (
+		SELECT
+			*
+		FROM
+			d
+		WHERE
+			LOCATION = CASE WHEN (select count(*)  from d where LOCATION = '0')<(select count(*) from d where LOCATION = '1') then '0' else '1' END
+	) G ON f.send_request_unit = G .send_request_unit
+) SELECT
+	C .org_id orgId,
+	C .local_cnt localTotal,
+	e.local_cnt localUse,
+	C .remote_cnt remoteTotal,
+	e.remote_cnt remoteUse,
+	C .remark
+FROM
+	JK_ORG_RESOURCE_DISTRIBUTE C
+LEFT JOIN e ON C .org_id = e.send_request_unit
+ORDER BY
+	C .org_id
+
+----------------------------------------------------------------------
+join的使用：
+SELECT
+	A .zk_id zkid,
+	A .zk_request_id zkRequestId,
+	A .case_id caseId,
+	A .case_name caseName,
+	A .object_id objectId,
+	A .object_name objectName,
+	A .zk_no zkNo,
+	A .zk_no_type zkNoType,
+	A .send_request_unit sendRequestUnit,
+	A .send_request_ip sendRequestIp,
+	A .send_request_time sendRequestTime,
+	C .net_count netCount,
+	b.ZK_STRATEGY zkStrategy,
+	b.remark
+FROM
+	JK_ZK_REQUEST_LOG A
+JOIN jk_zk_record b ON A .zk_request_id = b.zk_request_id
+JOIN (
+	SELECT
+		zk_id,
+		COUNT (net_name) net_count
+	FROM
+		JK_NET_DISPATCH_DETAIL
+	WHERE
+		status = '1'
+	GROUP BY
+		zk_id
+) C ON b.zk_id = C .zk_id
+WHERE
+	A .jk_type = 'DX'
+AND b.zk_status IN ('10', '11')
+AND A .send_request_unit IN ('3901', '23921', '23901')
+ORDER BY
+	A .zk_request_id DESC
+LIMIT 10 OFFSET 0
+
+------------------------------------------------------------------
+case when 的使用：
+
+SELECT
+	A .net_type netType,
+	A .net_name netName,
+	A .coverage_range coverageRange,
+	A .service_provider serviceProvider,
+	A .standard standard,
+	A .specificate_cnt specificateCnt,
+	A .distribute_cnt distributeCnt,
+	b.use_cnt useCnt
+FROM
+	JK_NET_INFO A
+LEFT JOIN (
+	SELECT
+		b.net_name,
+		COUNT (b.net_name) use_cnt
+	FROM
+		JK_NET_DISPATCH_DETAIL b
+	WHERE
+		b.status = '1'
+	GROUP BY
+		net_name
+) b ON A .net_name = b.net_name
+WHERE
+	1 = 1
+ORDER BY
+	CASE
+WHEN b.use_cnt IS NULL THEN
+	1
+ELSE
+	0
+END ASC,
+ b.use_cnt DESC
+LIMIT 10 OFFSET 0
+
+
+
+---------------------------------------------------------------------------------
+
+sql优化
+
+方案一 ：
+
+SELECT 	mont1.hit_taskid,
+	activity_time,
+	TABLE_NAME,
+	ACTION,
+	LONGITUDE,
+	LATITUDE
+FROM
+	monit_track_summary_jk mont1
+JOIN (
+	SELECT
+		hit_taskid,
+		MAX (activity_time) maxtime
+	FROM
+		monit_track_summary_jk
+	WHERE
+		hit_taskid IN ('455285','376474','384749','482295','481819','481686','482286','481786','481685')
+       AND activity_time >= 1521734400
+       AND activity_time <= 1543852799
+	GROUP BY
+		hit_taskid
+) mont2 ON mont1.hit_taskid = mont2.hit_taskid
+AND mont1.activity_time = mont2.maxtime
+AND mont1.activity_time >= 1521734400
+AND mont1.activity_time <= 1543852799
+group by  mont1.hit_taskid,
+	activity_time,
+	TABLE_NAME,
+	ACTION,
+	LONGITUDE,
+	LATITUDE
+
+
+方案2：
+
+select hit_taskid,activity_time,TABLE_NAME,ACTION,LONGITUDE,LATITUDE from
+(
+select hit_taskid,activity_time,TABLE_NAME,ACTION,LONGITUDE,LATITUDE,dense_rank()over(partition by hit_taskid  order by activity_time desc ) tt
+  from monit_track_summary_jk
+ where hit_taskid IN ('455285','376474','384749','482295','481819','481686','482286','481786','481685')
+   AND activity_time >= 1521734400
+   AND activity_time <= 1543852799
+ )t  where tt=1
+ group by hit_taskid,activity_time,TABLE_NAME,ACTION,LONGITUDE,LATITUDE 
+
+
+---------------------------------------------------------------------------------
+
+创建分区
+
+CONSTRAINT "monit_track_summary_jk_1_prt_p20170914_check" CHECK ((activity_time >= 1505318400::bigint) AND (activity_time < 1505404800::bigint))
+)
+INHERITS ("public"."monit_track_summary_jk") 
+WITH (OIDS=FALSE)
+;
+
+ALTER TABLE "public"."monit_track_summary_jk_1_prt_p20170914" OWNER TO "monit";
+
+
+
+CREATE INDEX "monit_track_summary_jk_1_prt_p20170914_activity_time_key" ON "public"."monit_track_summary_jk_1_prt_p20170914" USING btree (activity_time);
+
+CREATE INDEX "monit_track_summary_jk_1_prt_p20170914_hit_ruleid_key" ON "public"."monit_track_summary_jk_1_prt_p20170914" USING btree (hit_ruleid);
+
+CREATE INDEX "monit_track_summary_jk_1_prt_p20170914_hit_taskid_key" ON "public"."monit_track_summary_jk_1_prt_p20170914" USING btree (hit_taskid);
+
+CREATE INDEX "monit_track_summary_jk_1_prt_p20170914_unique_id_key" ON "public"."monit_track_summary_jk_1_prt_p20170914" USING btree (unique_id);
+
+
+--------------------------------------------------------------------------------------
+
+按指定字段去重查询：
+
+ select * from 
+(
+select *,row_number()over(partition by activity_time,biz_fld1,action order by 1) yyy 
+from monit_track_summary_jk
+where 	hit_taskid IN ('586168')
+AND (
+	activity_time >= 1534151594
+	AND activity_time <= 1536829994
+)
+
+ORDER BY
+	ACTIVITY_TIME DESC
+LIMIT 100 OFFSET 0
+
+) t where t.yyy=1
+
+
+--------------------------------------------------------------------------------------------
+
+row_number()函数  生成序列号  必须使用over子句的排序语句对记录进行排序，order by自定组内排序，外层sql在使用排序规则
+
+rank() 函数 返回结果集的分区内每行的排名，排序字段相同的序号是一样的，跳跃排序
+
+dense_rank()函数  连续排序，不跳过
+
+ntile() 对序号进行分组处理
+
+
+-----------------------------------------------------------------------------------------------------
+
+查询动态改变where条件
+
+(select case when unique_id = '8b576548-d59e-4501-bd0f-45a23971c2df' then unique_id = '8b576548-d59e-4501-bd0f-45a23971c2df'
+
+else  T.yy = 1 and unique_id != '8b576548-d59e-4501-bd0f-45a23971c2df' end ) 
+
+
+--------------------------------------------------------------------------------
+
+pg创建字符串聚合函数
+
+create AGGREGATE group_concat(anyelement)
+(
+  sfunc=array_append,
+  stype=anyarray,
+  initcond='{}'
+)
+
+
+----------------------------------------------------------------------------------
+
+oracle字符串聚集函数
+
+ LISTAGG (ACTION || '-' || activity_time,';') WITHIN GROUP ( ORDER BY activity_time desc) str
+
+
+-----------------------------------------------------------------------------------
+
+连表更新 ：
+UPDATE b INNER JOIN c ON b.c1=c.c1 SET b.c2=c.c2+b.c2  
+
+
+-----------------------------------------------------------------------------
+
+oracle多台机器连接串：
+
+jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = 12.15.4.241)(PORT = 1521)) (ADDRESS = (PROTOCOL = TCP)(HOST = 12.15.5.23)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = dg_taf_ora11g) (FAILOVER_MODE =(TYPE = SELECT)(METHOD =BASIC)(RETRIES = 60)(DELAY = 3)) ))
+
+
+---------------------------------------------------------------------------------
+
+拆分，统计:
+
+split_part :
+
+select sum(case when part1 like '%30001%' then 1 when  part2 like '%30001%' then 1 when  part3 like '%30001%' then 1 else 0 end) privatenum,
+
+sum(case when part1 like '%30005%' then 1 when  part2 like '%30005%' then 1 when  part3 like '%30005%' then 1 else 0 end) groupnum,
+
+sum(case when part1 like '%30003%' then 1 when  part2 like '%30003%' then 1 when  part3 like '%30003%' then 1 else 0 end) circlenum
+
+ from (
+
+select split_part(wxdeploystatus, ',',1) part1,split_part(wxdeploystatus, ',',2) part2,split_part(wxdeploystatus, ',',3) part3  from jk_zk_record d  join jk_zk_request_log g on d.zk_id=g.zk_id and g.zk_id!='0'
+
+and  d.zk_status in ('10','11','13') and jk_type='WX' ) t
+
+-----------------------------------------------------------------------------------
+
+sql拼接:
+
+select upareaid from upareatable where   relateid='0' and to_char(upareaid, '999999') like '%'||(select substr(to_char
+
+(upareaid,'999999'), 0 ,4)  from upareatable where upareaname like '%阿克苏地区%' limit 1)||'%'
+
+----------------------------------------------------------------------------------
+
+pgsql判空:
+
+coalesce(historyremark,'')
+
+----------------------------------------------------------------------------------
+
+备份表
+
+create table jk_org_wxallresource_distribute_bak190222 as select * from jk_org_wxallresource_distribute ;

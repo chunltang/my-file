@@ -1,0 +1,329 @@
+mongodb：
+   
+   SKClient.sh read server  /stars/dbg/server/mongodb 12.15.5.165:2181,12.15.5.166:2181,12.15.5.167:2181
+
+   port:28128;hostName:CS-5-29;userName:mongodbAdmin;passWd:fda79bb6_716f_4203_9cb1_a73a30cd0c50
+
+   mongo CS-5-29:28128 登陆  
+
+   启用认证：mongod --dbpath .../mongodb/data --port 28128 --auth
+
+   mongo --port 28128 -u mongodbAdmin -p fda79bb6_716f_4203_9cb1_a73a30cd0c50 admin 
+
+      use taskcenter
+
+     db.TASK_CENTER.find({"taskid":"681519"}).pretty()
+
+
+   认证：use admin /  db.auth("userName","passWd") db.auth("mongodbAdmin","fda79bb6_716f_4203_9cb1_a73a30cd0c50")
+
+ 
+命令集：
+
+    db.TASK_CENTER.find({"taskid":"311111"}).pretty()
+   
+    db /show dbs /show collections /db.users.find() /db.users.insert({"name":"tcl","sex":"man"})
+
+    db.users.update({"name":"tcl"},{"$set":{"sex":"woman"}},upsert=true,multi=false) 
+
+          upsert:不存在则插入 multi:允许修改多条记录
+   
+    db.users.remove() 删除所有记录
+
+    db.users.drop()  删除users这个collection集合
+ 
+    db.dropDatabase()  删除当前数据库
+
+    use admin  切换到创建用户
+
+    db.addUser("name","pwd")  创建用户
+
+    db.createCollection("tableNmae")  创建表
+
+
+
+======================================================================================================
+
+数据库-集合-文档
+
+文档中的键、值对是有序的，区分类型和大小写，文档不能有重复的键，键是字符串
+
+当第一个文档插入时，集合就会被创建
+
+capped collections 固定大小的collection，创建时指定集合大小，有队列过期的特性，过期按照插入的顺序，更新时的文档不可以
+
+     超过之前文档的大小
+
+元数据：数据库信息是存储在集合中，他们使用了系统的命名空间,dbname.system.*,包含多种系统信息的特殊集合
+
+
+============================================================================================================
+
+数据类型：
+
+String,interger,boolean,double,array,timestamp,object(内嵌文档),null,date,objectid,binarydata,reg exp(正则)
+
+ObejctId:类似唯一主键，可以很快去生成和排序包含12bytes，由时间戳（与时间无关，内部使用）、机器码、pid，3位随机数
+
+获取时间戳：var newObject=ObjectId()  newObject.getTimestamp()
+
+
+
+
+============================================================================================================
+
+创建capped collections:
+
+db.createCollection("mycoll",{capped:true,size:100000}) 创建集合
+
+使用drop()删除collection所有行
+
+use dbname : 不存在则创建数据库  db.dropDatabase() 删除数据库  db.collectionname.drop() 删除集合
+
+
+
+插入文档：
+
+insert()或者save(),指定_id字段时，save()更新_id的数据
+
+db.runoob.insert({x:10})
+
+所有存储在集合中的数据都是BSON格式，BSON是一种类json的一种二进制形式的存储格式，简称Binary JSON。
+
+
+
+更新文档：
+
+update()或者save()，update()跟新已存在的文档
+
+db.collection.update(query(相当于where),update(相当于set),
+
+   {upsert:boo(默认false，不插入新对象),multi:boo(默认false，只更新匹配的第一条),writeConcern:异常级别})
+
+save()方法通过传入的文档来替换已有文档，需要指定_id来替换
+
+
+
+
+删除文档：
+
+remove()
+
+db.collection.remove(query,{justOne:(为true或1时只删除一个文档)})
+
+db.collection.remove({})  类似truncate命令，删除所有数据
+
+
+
+查询文档：
+
+find()
+
+db.colletion.find(query,projection(可选，使用投影操作符指定返回的键))
+
+$inc 
+
+AND :{x:1,y:2} 使用逗号隔开的多个键
+
+OR：$or {$or:[{x:1},{y:2}]}
+
+
+
+
+条件操作符：
+
+$set $gt(>) $gte(>=) $lt(<) $lte(<=) $ne(!=)
+
+{count:{$lt:200,$gt:100}}  100<count<200
+
+$type:基于BSON类型来检索集合中匹配的数据类型，并返回结果
+
+double:1  string:2  Object:3  array:4  ObjectId:7  boolean:8  Date:9  null:10
+
+{name:{$type:string(或者2)}}
+
+
+
+Limit:
+
+db.colletion.find().limit(num)
+
+skip()：
+
+使用skip()来跳过指定数量的数据
+
+db.collection.find().limit(1).skip(1)
+
+
+
+Sort:
+
+对数据进行排序，1为升序，-1为降序
+
+db.collection.find().sort({key:1})
+
+
+
+
+索引：
+
+索引是特殊的数据结构，索引存储在一个易于遍历读取的数据集合中，索引是对数据库表中的一列或多列的值进行排序的一种结构
+
+使用createIndex()创建索引
+
+db.collection.createIndex(keys,options)  1为升序 -1为降序
+
+db.collection.createIndex(name:1)
+
+复合索引：db.col.createIndex(name:1,age:-1)
+
+
+
+聚合：
+
+aggregate()
+
+db.collection.aggregate([{$group:{_id:"$by_user",num_tutorial:{$num:1}}}])
+
+类似select by_user,count(*) from col group by by_user
+
+$push/$addToset  在结果文档中插入值到一个数组中
+
+$first/$last
+
+
+管道：
+
+$project  $match(数据过滤，having)  $limit  $skip   $unwind   $group   $sort   $geoNear
+
+db.col.aggregate({$project:{title:1,author:1}})  只显示3个字段,_id默认显示，_id:0 取消显示
+
+
+
+$in :
+
+var result=db.users.findOne({name:"tcl",address:1})
+
+var address=db.address.find({"_id"{$in:result["address"]}})
+
+
+
+原子操作：
+
+mongo不支持事务，所谓的原子操作就是要么这个文档保存到mongo，要么没有保存到mongo，不会出现查询到的文档没有保存完整的情况
+
+
+使用db.findAndModify()找到修改
+
+$set  $unset  $inc  $push   $pushAll  $pull   $addToSet(数组中不存在则添加)  $rename(修改字段名)
+
+
+$push:
+
+db.test.update({taskid:"38"},{$push:{"outputparam.rules":{"name":"tccle"}}})  在后面添加
+
+$pop:
+
+db.test.update({taskid:"38"},{$pop:{"rules":1}})  1为删除最后一个值，-1为删除第一个值
+
+$pull:
+
+db.test.update({taskid:"38"},{$pull:{"outputparam.rules":{"name":"tccle"}}})   删除指定值
+
+修改数组值:
+
+db.test.update({taskid:"38"},{$set:{"outputparam.rules.0.expr":"rexxxxxxxxxxxxx"}}) 
+
+$inc:
+
+db.test.update({taskid:"38"},{$inc:{status:2}})  每次修改增加2
+
+$elemMatch:
+
+{person:{$elemMatch:{name:tcl,age:25}}}   匹配数组元素
+
+
+name.$ : 定位符$确定数组中一个要被更新的元素的位置，而不用具体制定该元素在数组中位置（匹配第一个）
+
+db.test.update({taskid:"38","outputparam.rules.name":"xiaoming"},{$set:{"outputparam.rules.$.name":"xiaobai"}})
+
+    outputparam.rules是数组，匹配数组中的元素可以使用点号
+
+$unset:
+
+db.test.update({taskid:"38"},{$unset:{"outputparam.rulesss1":""}},false,true)   删除字段 
+
+
+$exists:
+
+db.test.update({taskid:"38","taskval":{$exists:false}},{$set:{"taskval":"dd"}})  不存在则添加，为true时，存在则不修改
+
+count():
+
+db.accept_object.count() 统计
+
+$group:
+
+db.accept_object.aggregate([{$group:{'_id':'$objType',typetotal:{$sum:1}}}])  分组
+
+
+db.accept_object.aggregate([{$group:{'_id':'$objType',typetotal:{$sum:1},typeavg:{$avg:"$mtm"},typemax:{$max:"$mtm"},typemin:
+
+{$min:"$mtm"},typedata:{$push:"$objType"}}}]) 
+
+typedata:{$push:"$objType"} 对应字段的所有数据  
+
+typedisc:{$addToSet:"$objType"}查询值去重
+
+
+$strcasecmp：
+
+db.accept_object.aggregate([{$project:{_id:0,'name':1,'type':"$objType",'job':{$strcasecmp:['$objType','1008']}}}])
+
+数据比较，相等返回0，大于1008返回1，小于返回-1
+
+==================================================================================
+
+$where:
+
+db.test.find({$where:function(){ return this.age>2;}})
+
+distinct：去重
+
+db.runCommand({distinct:"test(集合)",key:"age(字段)"})  
+
+group：分组
+
+ db.runCommand({
+        group:{
+            ns:"TASK_CENTER",
+            key:{"status":true},
+            initial:{status:0},//累加器
+            $reduce:function (doc,prev) {//分解器（当前对象，累加器）当前记录和前一条记录比较
+                if(doc.status>prev.status){
+                    prev.status=doc.status;
+                }
+            },
+            condition:{status:{$gt:2}} //分组后筛选
+        }
+    })
+
+
+$project,$sort:
+
+db.test.aggregate({$project:{_id:0,age:1}},{$sort:{age:1}})
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    

@@ -1,0 +1,732 @@
+1.Entity 中不映射成列的字段得加 @Transient 注解，不加注解也会映射成列
+
+web引入：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+    @Id
+    @GeneratedValue  //自增序列
+    private Long id;
+	
+	@Column(nullable = false, unique = true)//非空、唯一约束
+    private String userName;
+	
+*************************************************************************************************************************
+
+2.测试
+
+测试引入：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+ 
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class HelloTest {
+
+    private MockMvc mvc;
+
+    @Before
+    public void setUp() throws Exception {
+        mvc = MockMvcBuilders.standaloneSetup(new HelloWorldController()).build();
+    }
+
+    @Test
+    public void getHello() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/hello").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(IsEqual.equalTo("hello world!")));
+    }
+}
+
+*************************************************************************************************************************
+
+3.自定义过滤器
+
+@Configuration
+public class WebConfiguration {
+    @Bean
+    public RemoteIpFilter remoteIpFilter() {
+        return new RemoteIpFilter();
+    }
+
+    @Bean
+    public FilterRegistrationBean testFilterRegistration() {
+
+        FilterRegistrationBean registration = new FilterRegistrationBean();
+        registration.setFilter(new MyFilter());
+        registration.addUrlPatterns("/*");
+        registration.addInitParameter("paramName", "paramValue");
+        registration.setName("MyFilter");
+        registration.setOrder(1);
+        return registration;
+    }
+
+    public class MyFilter implements Filter {
+        @Override
+        public void destroy() {
+            // TODO Auto-generated method stub
+        }
+
+        @Override
+        public void doFilter(ServletRequest srequest, ServletResponse sresponse, FilterChain filterChain)
+                throws IOException, ServletException {
+            // TODO Auto-generated method stub
+            HttpServletRequest request = (HttpServletRequest) srequest;
+            System.out.println("this is MyFilter,url :"+request.getRequestURI());
+            filterChain.doFilter(srequest, sresponse);
+        }
+
+        @Override
+        public void init(FilterConfig arg0) throws ServletException {
+            // TODO Auto-generated method stub
+        }
+    }
+}
+
+*************************************************************************************************************************
+
+4.dao层接口
+
+数据库引入：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+</dependency>
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    User findByUserName(String userName);
+    User findByUserNameOrEmail(String username, String email);
+}
+
+*************************************************************************************************************************
+
+5.属性类
+
+@Component
+public class NeoProperties {
+    @Value("${com.neo.title}")
+    private String title;
+    @Value("${com.neo.description}")
+    private String description;
+    //省略getter settet方法
+	
+*************************************************************************************************************************
+	
+6.Thymeleaf 模板
+
+注意，由于 Thymeleaf 使用了 XML DOM 解析器，因此它并不适合于处理大规模的 XML 文件。
+
+Thymeleaf 对于 URL 的处理是通过语法 @{...} 来处理的。Thymeleaf 支持绝对路径 URL：
+<a th:href="@{http://www.thymeleaf.org}">Thymeleaf</a>
+
+条件求值：
+<a th:href="@{/login}" th:unless=${session.user != null}>Login</a>
+
+for循环：
+<tr th:each="prod : ${prods}">
+      <td th:text="${prod.name}">Onions</td>
+      <td th:text="${prod.price}">2.41</td>
+      <td th:text="${prod.inStock}? #{true} : #{false}">yes</td>
+</tr>
+
+*************************************************************************************************************************
+
+7.WebJars
+
+前端资源引入：
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>vue</artifactId>
+    <version>2.5.16</version>
+</dependency>
+		
+ WebJars是一个很神奇的东西，可以让大家以 Jar 包的形式来使用前端的各种框架、组件。
+ WebJars 是将客户端（浏览器）资源（JavaScript，Css等）打成 Jar 包文件，以对资源进行统一依赖管理。WebJars 的 Jar 包部署在 Maven 中央仓库上。
+ 
+页面引入：
+<link th:href="@{/webjars/bootstrap/3.3.6/dist/css/bootstrap.css}" rel="stylesheet"></link>
+
+*************************************************************************************************************************
+
+8.Gradle 构建工具
+Spring 项目建议使用 Maven/Gradle 进行构建项目，相比 Maven 来讲 Gradle 更简洁，而且 Gradle 更适合大型复杂项目的构建。
+Gradle 吸收了 Maven 和 Ant 的特点而来，不过目前 Maven 仍然是 Java 界的主流，大家可以先了解了解。
+
+*************************************************************************************************************************
+
+9.redis 
+
+引入：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+</dependency>
+
+Lettuce 是一个可伸缩线程安全的 Redis 客户端，多个线程可以共享同一个 RedisConnection，它利用优秀 netty NIO 框架来高效地管理多个连接。
+注解：@EnableCaching来开启缓存。
+
+cache 的配置类：
+@Configuration
+@EnableCaching
+public class RedisConfig extends CachingConfigurerSupport {
+    @Bean
+    public KeyGenerator keyGenerator() {
+        return new KeyGenerator() {
+            @Override
+            public Object generate(Object target, Method method, Object... params) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(target.getClass().getName());
+                sb.append(method.getName());
+                for (Object obj : params) {
+                    sb.append(obj.toString());
+                }
+                return sb.toString();
+            }
+        };
+    }
+}
+
+controller中使用缓存：
+@RestController
+public class UserController {
+    @RequestMapping("/getUser")
+    @Cacheable(value="user-key")//user-key::com.example.demo.controller.UserControllergetUser 在缓存中保存的键名称
+    public User getUser() {
+        User user=new User("aa@126.com", "aa", "aa123456", "aa","123");
+        System.out.println("若下面没出现“无缓存的时候调用”字样且能打印出数据表示测试成功");
+        return user;
+    }
+}
+
+*************************************************************************************************************************
+
+10.session共享：
+
+引入：
+<dependency>
+    <groupId>org.springframework.session</groupId>
+    <artifactId>spring-session-data-redis</artifactId>
+</dependency>
+
+session配置：
+@Configuration
+@EnableRedisHttpSession(maxInactiveIntervalInSeconds = 86400*30)
+public class SessionConfig {
+}
+
+使用：
+@RequestMapping("/uid")
+String uid(HttpSession session) {
+    UUID uid = (UUID) session.getAttribute("uid");
+    if (uid == null) {
+        uid = UUID.randomUUID();
+    }
+    session.setAttribute("uid", uid);
+    return session.getId();
+}
+
+如何在两台或者多台中共享 Session：
+其实就是按照上面的步骤在另一个项目中再次配置一次，启动后自动就进行了 Session 共享。
+
+*************************************************************************************************************************
+
+11.Thymeleaf
+Thymeleaf 是新一代的模板引擎，在 Spring4.0 中推荐使用 Thymeleaf 来做前端模版引擎
+
+标准表达式语法：
+它们分为四类：
+1.变量表达式
+2.选择或星号表达式
+3.文字国际化表达式
+4.URL 表达式
+
+变量表达式：
+即 OGNL 表达式或 Spring EL 表达式(在 Spring 术语中也叫 model attributes)。如下所示：
+${session.user.name}
+它们将以HTML标签的一个属性来表示：
+<span th:text="${book.author.name}">  
+<li th:each="book : ${books}">  
+
+选择(星号)表达式：
+选择表达式很像变量表达式，不过它们用一个预先选择的对象来代替上下文变量容器(map)来执行，如下：
+*{customer.name}
+被指定的 object 由 th:object 属性定义：
+<div th:object="${book}">  
+  ...  
+  <span th:text="*{title}">...</span>  
+  ...  
+</div> 
+
+文字国际化表达式：
+文字国际化表达式允许我们从一个外部文件获取区域文字信息(.properties)，用 Key 索引 Value，还可以提供一组参数(可选).
+#{main.title}  
+#{message.entrycreated(${entryId})} 
+<table>  
+  ...  
+  <th th:text="#{header.address.city}">...</th>  
+  <th th:text="#{header.address.country}">...</th>  
+  ...  
+</table>  
+
+URL 表达式：
+URL 表达式指的是把一个有用的上下文或回话信息添加到 URL，这个过程经常被叫做 URL 重写。 
+@{/order/list}
+URL还可以设置参数： 
+@{/order/details(id=${orderId})}
+相对路径： 
+@{../documents/report}
+让我们看这些表达式：
+<form th:action="@{/createOrder}">  
+<a href="main.html" th:href="@{/main}"> 
+
+表达式支持的语法：
+字面（Literals）
+文本文字（Text literals）: 'one text', 'Another one!',…
+数字文本（Number literals）: 0, 34, 3.0, 12.3,…
+布尔文本（Boolean literals）:true, false
+空（Null literal）:null
+文字标记（Literal tokens）:one, sometext, main,…
+文本操作（Text operations）
+字符串连接(String concatenation):+
+文本替换（Literal substitutions）:|The name is ${name}|
+算术运算（Arithmetic operations）
+二元运算符（Binary operators）:+, -, *, /, %
+减号（单目运算符）Minus sign (unary operator):-
+布尔操作（Boolean operations）
+二元运算符（Binary operators）:and, or
+布尔否定（一元运算符）Boolean negation (unary operator):!, not
+比较和等价(Comparisons and equality)
+比较（Comparators）:>, <, >=, <= (gt, lt, ge, le)
+等值运算符（Equality operators）:==, != (eq, ne)
+条件运算符（Conditional operators）
+If-then:(if) ? (then)
+If-then-else:(if) ? (then) : (else)
+Default: (value) ?:(defaultvalue)
+
+赋值、字符串拼接：
+<p  th:text="${collect.description}">description</p>
+<span th:text="'Welcome to our application, ' + ${user.name} + '!'">
+字符串拼接还有另外一种简洁的写法
+<span th:text="|Welcome to our application, ${user.name}!|">
+
+条件判断 If/Unless：
+Thymeleaf中使用th:if和th:unless属性进行条件判断，下面的例子中，<a>标签只有在th:if中条件成立时才显示：
+<a th:if="${myself=='yes'}" > </i> </a>
+<a th:unless=${session.user != null} th:href="@{/login}" >Login</a>
+
+for 循环：
+<tr  th:each="collect,iterStat : ${collects}"> 
+   <th scope="row" th:text="${collect.id}">1</th>
+   <td >
+      <img th:src="${collect.webLogo}"/>
+   </td>
+   <td th:text="${collect.url}">Mark</td>
+   <td th:text="${collect.title}">Otto</td>
+   <td th:text="${collect.description}">@mdo</td>
+   <td th:text="${terStat.index}">index</td>
+</tr>
+iterStat称作状态变量，属性有：
+index:当前迭代对象的 index（从0开始计算）
+count: 当前迭代对象的 index(从1开始计算)
+size:被迭代对象的大小
+current:当前迭代变量
+even/odd:布尔值，当前循环是否是偶数/奇数（从0开始计算）
+first:布尔值，当前循环是否是第一个
+last:布尔值，当前循环是否是最后一个
+
+内联 js：
+内联文本：[[…]] 内联文本的表示方式，使用时，必须先用th:inline="text/javascript/none"激活，
+th:inline可以在父级标签内使用，甚至作为 body 的标签。内联文本尽管比th:text的代码少，不利于原型显示。
+
+内嵌变量：
+为了模板更加易用，Thymeleaf 还提供了一系列 Utility 对象（内置于 Context 中），可以通过 # 直接访问：
+dates ： java.util.Date的功能方法类。
+calendars : 类似#dates，面向java.util.Calendar
+numbers : 格式化数字的功能方法类
+strings : 字符串对象的功能类，contains,startWiths,prepending/appending等等。
+objects: 对objects的功能类操作。
+bools: 对布尔值求值的功能方法。
+arrays：对数组的功能类方法。
+lists: 对lists功能类方法
+sets
+maps
+
+使用 Thymeleaf 布局：
+Spring Boot 2.0 将布局单独提取了出来，需要单独引入依赖：thymeleaf-layout-dialect。
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+<dependency>
+    <groupId>nz.net.ultraq.thymeleaf</groupId>
+    <artifactId>thymeleaf-layout-dialect</artifactId>
+</dependency>
+
+*************************************************************************************************************************
+
+12.Spring Boot Jpa使用
+
+Jpa (Java Persistence API) 是 Sun 官方提出的 Java 持久化规范。它为 Java 开发人员提供了一种对象/关联映射工具来管理 Java 应用中的关系数据。
+它的出现主要是为了简化现有的持久化开发工作和整合 ORM 技术，结束现在 Hibernate，TopLink，JDO 等 ORM 框架各自为营的局面。
+
+Spring Boot Jpa 是 Spring 基于 ORM 框架、Jpa 规范的基础上封装的一套 Jpa 应用框架，可使开发者用极简的代码即可实现对数据的访问和操作。
+它提供了包括增删改查等在内的常用功能，且易于扩展！学习并使用 Spring Data Jpa 可以极大提高开发效率！
+
+Spring Boot Jpa 让我们解脱了 DAO 层的操作，基本上所有 CRUD 都可以依赖于它来实现
+
+继承 JpaRepository
+public interface UserRepository extends JpaRepository<User, Long> {
+}
+
+复杂查询：
+在实际的开发中我们需要用到分页、删选、连表等查询的时候就需要特殊的方法或者自定义 SQL
+
+分页查询：
+分页查询在实际使用中非常普遍了，Spring Boot Jpa 已经帮我们实现了分页的功能，在查询的方法中，需要传入参数Pageable ,当查询中有多个参数的时候Pageable建议做为最后一个参数传入.
+Page<User> findALL(Pageable pageable);
+Page<User> findByUserName(String userName,Pageable pageable);
+
+自定义SQL查询：
+其实 Spring Data 觉大部分的 SQL 都可以根据方法名定义的方式来实现，但是由于某些原因我们想使用自定义的 SQL 来查询，Spring Data 也是完美支持的；在 SQL 的查询方法上面使用@Query注解，如涉及到删除和修改在需要加上@Modifying.也可以根据需要添加 @Transactional对事物的支持，查询超时的设置等。
+@Modifying
+@Query("update User u set u.userName = ?1 where u.id = ?2")
+int modifyByIdAndUserId(String  userName, Long id);
+	
+@Transactional
+@Modifying
+@Query("delete from User where id = ?1")
+void deleteByUserId(Long id);
+  
+@Transactional(timeout = 10)
+@Query("select u from User u where u.emailAddress = ?1")
+User findByEmailAddress(String emailAddress);
+
+多数据源的支持：
+同源数据库的多源支持
+日常项目中因为使用的分布式开发模式，不同的服务有不同的数据源，常常需要在一个项目中使用多个数据源，因此需要配置 Spring Boot Jpa 对多数据源的使用，一般分一下为三步：
+1 配置多数据源
+2 不同源的实体类放入不同包路径
+3 声明不同的包路径下使用不同的数据源、事务支持
+
+*************************************************************************************************************************
+
+13.mybatis
+
+引入：
+<dependency>
+	<groupId>org.mybatis.spring.boot</groupId>
+	<artifactId>mybatis-spring-boot-starter</artifactId>
+	<version>2.0.0</version>
+</dependency>
+
+相关配置：
+mybatis.type-aliases-package=com.neo.model
+spring.datasource.url=jdbc:mysql://localhost:3306/test?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=true
+spring.datasource.username=root
+spring.datasource.password=123456
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver  #这一种只使用注解
+#使用xml的形式
+mybatis.config-location=classpath:mybatis/mybatis-config.xml   #这一种像使用元mybatis一样，需要配置xml
+mybatis.mapper-locations=classpath:mybatis/mapper/*.xml
+
+logging.level.com.example.mapper =debug  #show sql
+
+
+使用p6spy打印sql：
+spring:
+  datasource:
+    username: root
+    password: 123456
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver   #使用p6spy格式化输出sql，需要改驱动和url
+    url: jdbc:p6spy:mysql://192.168.43.182:3306/gms?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
+
+
+mabatis多数据源配置
+spring:
+  datasource:
+    dynamic:
+      # 是否开启 SQL日志输出，生产环境建议关闭，有性能损耗
+      p6spy: true
+      hikari:  #springboot默认连接池
+        connection-timeout: 30000
+        max-lifetime: 1800000
+        max-pool-size: 15
+        min-idle: 5
+        connection-test-query: select 1
+        pool-name: FebsHikariCP
+      # 配置默认数据源
+      primary: base
+      datasource:
+        # 数据源-1，名称为 base
+        base:
+          username: root
+          password: 123456
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.43.182:3306/febs_base?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
+        # 数据源-2，名称为 quartz
+        quartz:
+          username: root
+          password: 123456
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.43.182:3306/febs_quartz?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
+
+
+*************************************************************************************************************************
+
+14.RabbitMQ
+RabbitMQ 即一个消息队列，主要是用来实现应用程序的异步和解耦，同时也能起到消息缓冲，消息分发的作用。
+消息中间件在互联网公司的使用中越来越多，刚才还看到新闻阿里将 RocketMQ 捐献给了 Apache，当然了今天的主角还是讲 RabbitMQ。
+消息中间件最主要的作用是解耦，中间件最标准的用法是生产者生产消息传送到队列，消费者从队列中拿取消息并处理，生产者不用关心是谁来消费，消费者不用关心谁在生产消息，
+从而达到解耦的目的。在分布式的系统中，消息队列也会被用在很多其它的方面，比如：分布式事务的支持，RPC 的调用等等。
+
+通常我们谈到队列服务, 会有三个概念： 发消息者、队列、收消息者，RabbitMQ 在这个基本概念之上, 多做了一层抽象, 在发消息者和 队列之间, 
+加入了交换器 (Exchange). 这样发消息者和队列就没有直接联系, 转而变成发消息者把消息给交换器, 交换器根据调度策略再把消息再给队列。
+
+*************************************************************************************************************************
+
+15.创建定时任务
+
+定时任务注解：@EnableScheduling
+
+@Scheduled 参数可以接受两种定时的设置，一种是我们常用的cron="*/6 * * * * ?",一种是 fixedRate = 6000，两种都表示每隔六秒打印一下内容。
+fixedRate 说明：
+@Scheduled(fixedRate = 6000) ：上一次开始执行时间点之后6秒再执行
+@Scheduled(fixedDelay = 6000) ：上一次执行完毕时间点之后6秒再执行
+@Scheduled(initialDelay=1000, fixedRate=6000) ：第一次延迟1秒后执行，之后按 fixedRate 的规则每6秒执行一次
+
+@Component
+public class Scheduler2Task {
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    @Scheduled(fixedRate = 6000)
+    public void reportCurrentTime() {
+        System.out.println("现在时间：" + dateFormat.format(new Date()));
+    }
+}
+
+*************************************************************************************************************************
+
+16.邮件服务
+引入：
+<dependency> 
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-mail</artifactId>
+</dependency> 
+
+邮箱配置：
+#邮箱服务器地址
+spring.mail.host=smtp.qq.com
+#认证
+spring.mail.username=1471728876@qq.com  #xml中可能存在空格，结尾有空格时也会导致认证失败
+spring.mail.password=szdsgioztxmphigd   #这里是第三方客户端认证密码，需要去登录QQ中设置开启SMTP服务
+spring.mail.default-encoding=UTF-8
+#以谁来发送邮件
+mail.fromMail.addr=1471728876@qq.com
+
+*************************************************************************************************************************
+
+17.springboot的热部署
+引入：
+ <dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-devtools</artifactId>
+        <optional>true</optional>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <fork>true</fork>
+            </configuration>
+        </plugin>
+</plugins>
+</build>
+
+在application.properties中配置：
+#热部署生效
+spring.devtools.restart.enabled: true
+#设置重启的目录
+#spring.devtools.restart.additional-paths: src/main/java
+#classpath目录下的WEB-INF文件夹内容修改不重启
+spring.devtools.restart.exclude: WEB-INF/**
+
+IDEA配置:
+当我们修改了Java类后，IDEA默认是不自动编译的，而spring-boot-devtools又是监测classpath下的文件发生变化才会重启应用，所以需要设置IDEA的自动编译：
+a.File-Settings-Compiler-Build Project automatically
+b.ctrl + shift + alt + /,选择Registry,勾上 Compiler autoMake allow when app running
+
+*************************************************************************************************************************
+
+18.Apache Shiro
+
+What is Apache Shiro?
+Apache Shiro 是一个功能强大、灵活的，开源的安全框架。它可以干净利落地处理身份验证、授权、企业会话管理和加密。
+Apache Shiro 的首要目标是易于使用和理解。安全通常很复杂，甚至让人感到很痛苦，但是 Shiro 却不是这样子的。一个好的安全框架应该屏蔽复杂性，向外暴露简单、直观的 API，来简化开发人员实现应用程序安全所花费的时间和精力。
+Shiro 能做什么呢？
+验证用户身份
+用户访问权限控制，比如：1、判断用户是否分配了一定的安全角色。2、判断用户是否被授予完成某个操作的权限
+在非 Web 或 EJB 容器的环境下可以任意使用 Session API
+可以响应认证、访问控制，或者 Session 生命周期中发生的事件
+可将一个或以上用户安全数据源数据组合成一个复合的用户 “view”(视图)
+支持单点登录(SSO)功能
+支持提供“Remember Me”服务，获取用户关联信息而无需登录
+
+*************************************************************************************************************************
+
+19.配置文件
+
+#是关闭 Thymeleaf 的缓存，不然在开发过程中修改页面不会立刻生效需要重启，生产可配置为 true。 
+propertiesspring.thymeleaf.cache=false 
+
+#mysql连接配置
+spring.datasource.url=jdbc:mysql://127.0.0.1/test?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC&useSSL=true
+spring.datasource.username=root
+spring.datasource.password=123456
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+#jpa设置
+spring.jpa.properties.hibernate.hbm2ddl.auto=create
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+spring.jpa.show-sql= true
+
+com.neo.title=纯洁的微笑
+com.neo.description=分享生活和技术
+
+#log配置,path 为本机的 log 地址，logging.level 后面可以根据包路径配置不同资源的 log 级别
+logging.path=D:/idea/log
+logging.level.com.favorites=DEBUG
+logging.level.org.springframework.web=INFO
+logging.level.org.hibernate=ERROR
+
+#redis配置
+# Redis数据库索引（默认为0）
+spring.redis.database=0  
+# Redis服务器地址
+spring.redis.host=localhost
+# Redis服务器连接端口
+spring.redis.port=6379  
+# Redis服务器连接密码（默认为空）
+spring.redis.password=
+# 连接池最大连接数（使用负值表示没有限制） 默认 8
+spring.redis.lettuce.pool.max-active=8
+# 连接池最大阻塞等待时间（使用负值表示没有限制） 默认 -1
+spring.redis.lettuce.pool.max-wait=-1
+# 连接池中的最大空闲连接 默认 8
+spring.redis.lettuce.pool.max-idle=8
+# 连接池中的最小空闲连接 默认 0
+spring.redis.lettuce.pool.min-idle=0
+
+#mybatis配置
+mybatis.type-aliases-package=com.example.demo.entity
+spring.datasource.url=jdbc:mysql://localhost:3306/test?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=true
+spring.datasource.username=root
+spring.datasource.password=123456
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+#使用xml的形式
+mybatis.config-location=classpath:mybatis/mybatis-config.xml
+mybatis.mapper-locations=classpath:mybatis/mapper/*.xml
+
+#邮箱配置
+#邮箱服务器地址
+spring.mail.host=smtp.qq.com
+#认证
+spring.mail.username=1471728876@qq.com
+spring.mail.password=szdsgioztxmphigd
+spring.mail.default-encoding=UTF-8
+#以谁来发送邮件
+mail.fromMail.addr=1471728876@qq.com
+
+*************************************************************************************************************************
+
+20.Actuator 监控
+
+引入：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+
+*************************************************************************************************************************
+
+21.Apache Shiro框架
+
+Apache Shiro 是一个功能强大、灵活的，开源的安全框架。它可以干净利落地处理身份验证、授权、企业会话管理和加密。
+
+Authentication（认证）：用户身份识别，通常被称为用户“登录”
+Authorization（授权）：访问控制。比如某个用户是否具有某个操作的使用权限。
+Session Management（会话管理）：特定于用户的会话管理,甚至在非web 或 EJB 应用程序。
+Cryptography（加密）：在对数据源使用加密算法加密的同时，保证易于使用。
+
+引入：
+<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-jpa</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-thymeleaf</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>net.sourceforge.nekohtml</groupId>
+		<artifactId>nekohtml</artifactId>
+		<version>1.9.22</version>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-web</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.shiro</groupId>
+		<artifactId>shiro-spring</artifactId>
+		<version>1.4.0</version>
+	</dependency>
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<scope>runtime</scope>
+</dependency>
+
+*************************************************************************************************************************
+
+22.Jenkins
+Jenkins 是 Devops 神器，安装和使用 Jenkins 部署 Spring Boot 项目
+
+*************************************************************************************************************************
+
+23.日志打印
+ private final Logger logger = LoggerFactory.getLogger(FallbackProvider.class);
+
+
+
+
+
+
+
+
+
+
+
+
+
+

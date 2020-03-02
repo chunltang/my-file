@@ -1,0 +1,7 @@
+1.redis从文件加载lua脚本
+redis-cli -h hostname -p port -a password SCRIPT LOAD "$(cat lua_script_file_location)"
+
+2.调用lua脚本
+config.lua：
+redis.call("config", "get", "bind")
+redis-cli --eval config.lua 

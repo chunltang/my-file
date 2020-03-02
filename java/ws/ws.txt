@@ -1,0 +1,30 @@
+Webservice 三要素：
+
+SOAP: 简单对象访问协议。soap用来描述传递信息的格式,是基于xml的简单协议，可使应用程序在HTTP之上进行信息交换
+
+WSDL:Web服务描述语言，用来描述如何访问具体的接口
+
+UDDI:通用描述、发现及整合，用来管理、分发、查询Webservice
+
+
+JWS CXF（无缝对接Spring） Axis2
+
+
+=========================================================================================
+
+发布服务：
+
+Endpoint.publish("http://localhost:8080/MyWebService",new TestWebServerImpl());
+
+发布成功后可以访问这个路径：
+
+http://localhost:8080/MyWebService?wsdl
+
+
+使用命令生成代码：
+
+wsimport 可以查看参数用法
+
+wsimport -s . -d ./classes -p com.client  http://localhost:8080/MyWebService?wsdl
+
+=========================================================================================

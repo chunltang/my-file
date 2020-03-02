@@ -1,0 +1,135 @@
+JDK动态代理
+
+在AOP、权限控制、事务管理等方面都有动态代理的实现
+
+JDK本身有实现动态代理的技术，但代理类必须实现某个接口。另一种更加灵活的动态代理技术CGLIB，spring会自动在JDK代理和CGLIB之间切换，也可以强制spring使用CGLIB
+
+JDK的动态代理是通过一个叫Proxy的类来实现的
+
+动态代理会生成字节码文件：利用ProxyGenerator类生成字节码文件
+
+动态代理过程：
+
+1.定义一个接口，编写实现该接口的实现类
+
+2.定义一个InvocationHandler类，实现InvocationHandler接口，重写invoke，并添加getProxy()
+
+
+实现过程：
+
+1.通过getProxyClass0()生成代理类
+
+2.通过Proxy.newProxyInstance()生成代理类的实列对象，创建对象时传入InvocationHandler类型的实列
+
+3.调用新实列的方法，即InvocationHandler类中的invoke()方法
+
+
+
+源码：
+
+public interface UserService {
+    public void add();
+}
+
+public class UserServiceImpl implements UserService {
+    @Override
+    public void add() {
+        System.out.println("---add---");
+    }
+}
+
+public class MyInvocationHandler implements InvocationHandler {
+
+    private Object target;
+
+    public MyInvocationHandler(Object target){
+        this.target=target;
+    }
+
+    //返回代理类接口的实列
+    public Object getProxy(){
+        return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),target.getClass().getInterfaces(),this);
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {//proxy为生成的代理类，代理方法，方法参数
+        System.out.println("---before---");
+        Object invoke = method.invoke(target, args);
+        System.out.println("---after---");
+        return invoke;
+    }
+}
+
+public class DynamicProxyTest {
+
+    public static void main(String[] args) {
+        UserService userService=new UserServiceImpl();
+        MyInvocationHandler invocationHandler=new MyInvocationHandler(userService);
+        UserService proxy=(UserService) invocationHandler.getProxy();//返回代理类的实列
+        proxy.add();//这里调用的不是代理对象的add方法，而是新生成的代理类的add方法，实际就是MyInvocationHandler的invoke方法
+
+
+        String path="C:/$Proxy0.class";
+        byte[] bytes = ProxyGenerator.generateProxyClass("$Proxy0", UserServiceImpl.class.getInterfaces());//生成代理的.class文件
+        FileOutputStream out=null;
+        try{
+            out=new FileOutputStream(path);
+            out.write(bytes);
+            out.flush();
+        }catch(Exception e){
+           e.printStackTrace();
+        }finally {
+            try{
+                out.close();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+    }
+}
+
+************************************************************************************************************************
+class JavaDeveloper implements Developer{
+    private String name;
+    
+    public JavaDeveloper(String name) {
+        this.name = name;
+    }
+    
+    @Override
+    public void code() {
+        // TODO Auto-generated method stub
+        System.out.println(this.name + " is coding java");
+        
+    }
+
+    @Override
+    public void debug() {
+        // TODO Auto-generated method stub
+        System.out.println(this.name + " is debugging java");
+    }
+    
+}
+
+JavaDeveloper zack = new JavaDeveloper("Zack");
+        zack.code();
+        zack.debug();
+        
+        //创建动态代理
+        Developer zackProxy = (Developer)Proxy.newProxyInstance(
+                    zack.getClass().getClassLoader(),                  //类加载器
+                    zack.getClass().getInterfaces(),                   //希望被代理的接口列表
+                    (proxy,method,agrs) -> {
+                        if(method.getName().equals("code")) {
+                            System.out.println("Zack is praying for the code");
+                        }
+                        if(method.getName().equals("debug")) {
+                            System.out.println("Zack's have no bug! No need to debug!");
+                        }
+                        //return method.invoke(proxy, agrs);
+                        return null;
+                    }
+                );
+        zackProxy.code();
+        zackProxy.debug();

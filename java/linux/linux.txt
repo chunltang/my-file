@@ -1,0 +1,985 @@
+﻿LINUX:
+
+
+环境变量的配置文件：.bash_profile,.bashrc,bash_logout
+
+查看端口：netstat -ntulp |grep 8083   -t tcp端口  -u UDP端口  -a 所有端口  -n 不进行DNS轮询，显示ip  -l 劲显示监听套接字
+
+查看一个服务有几个端口：ps -ef|grep mysqld            -p 显示进程标识符合进程名
+
+查看一台服务器上面有哪些服务及端口：netstat -lanp  
+
+rsync
+
+
+expr命令：算术命令  - + * /   操作符两端都有空格 expr 10 \* 100   元字符要转义
+
+linux命令替换：
+
+   命令 -h或--help查看命令参数含义  tar --help
+   
+   与重定向相似，区别在于命令替换是讲一个命令的输出作为另一个linux命令的参数   
+
+   command1 ‘command2’  command2的输出作为command1的参数   
+
+   脚本调用bc ：使用命令替换   ss=`echo "scale=2;a=10;b=3;a/b" | bc`   echo $ss
+
+
+
+变量赋值 ：=   a:=22  a:-33(不存储)  echo ${a:=22} 
+
+只读变量 ：使用readonly命令
+
+xargs命令：将输入作为下一个命令的参数 ls | xargs echo  ,有点像反引号的作用
+
+远程执行本地脚本：ssh root@12.15.5.29 'bash'<tomongo.sh
+
+
+bc运算器 ：常用浮点数运算工具
+
+   整型，浮点数，变量，注释，表达式，if-then等程序结构，函数
+
+   启动：bc [-q]   quit 退出
+
+   内建变量：scale  默认除法取整，指定scale=2，小数保留2位
+
+
+
+
+
+G使光标跳到最后一行，gg回行首，nG移动光标到n行
+
+shift+冒号  进入末行模式
+
+末行模式下输入：set nu  显示所有行号
+
+Linux 执行脚本的几种方式 ：
+    
+    1.source  filename   读入制定shell程序文件并依次执行，在当前shell程序中，变量立即生效
+    2../filename         执行当前目录的文件，当前目录没有在PATH中，有可执行权限时与sh没区别
+    3. sh filename       重新建立一个子shell，在子shell中执行脚本语句，继承父shell环境变量，但子shell中非
+                         环境变量在父shell中不能使用          
+
+cal 2 2018 
+man(info) 
+export LC_ALL=en_US.utf8
+
+chgrp ：改变文件所属群组
+chown ：改变文件拥有者
+chmod ：改变文件的权限, SUID, SGID, SBIT 等等的特性
+echo $PATH
+PATH="${PATH}:/root"将目录root添加入ls搜索路径
+mkdir -r 
+rmdir -r
+mv dir  rm dir cp dir 复制文件或重命名
+cp -a 全部    cp -r 递归  cp -s 建立快捷方式 ->   cp -l 实体连接
+ls -al /home/stars	ls -al PT* 正则匹配  
+su root 切换身份
+.相当于pwd，代表当前目录 ..前一级  ~ 根目录
+touch 创建空文件夹
+
+
+快速查阅文件
+cat tac tail less more nl head od
+
+cat -a all cat -n 行号，+空白页  cat -b 行号，不加空白页
+
+head -n 20 krb5.conf |tail -n 10  显示11-20行数据
+
+echo password |od -t oCc  显示password的ascll对照表
+
+date; ls -l krb5.conf ;ls -l user.keytab  使用分号分割命令  使用\另起一行命令
+
+umask  制定当前用户创建文件时的默认权限  022 表示拿掉组和其他写的权限  4.2.1  r.w.x
+
+passwd 修改当前用户密码
+
+file 查看文件内容类型
+
+which  查看脚本明令所在文档
+
+alias 别名   永久有效：将设置写到/etc/bashrc里面  单个用户生效：追加在~/.bashrc里面  source ~/.bashrc
+
+whereis 查找特定文件夹 find 全盘 locate 查数据库  查找文件  
+
+id root 查看用户属性
+
+useradd  添加用户
+
+groupadd 添加新群组
+
+上传 rz   下载 sz
+
+
+dumpe2fs 查看Ext家族文件系统
+
+blkid  列出目前系统被格式化的装置
+
+tab键  一个字母后是命令补全  2个字母后是文件补全
+
+alias  命令别名设置  alias lm='ls -a’
+
+工作控制、前景背景控制
+
+type  指令    显示指令的类型
+
+快捷键： 
+   
+   分别是从光标处向前删除指令串 ([ctrl]+u) 及向后删除指令串 ([ctrl]+k)。
+
+   分别是让光标移动到整个指令串的最前面 ([ctrl]+a) 或最后面 ([ctrl]+e)。
+
+
+变量：
+  echo  ${PATH}
+
+   变量内容若有空格符可使用双引号『"』或单引号『'』将变量内容结合起来，但
+
+   双引号内的特殊字符如 $ 等，可以保有原本的特性，如下所示：
+
+     var="lang is $LANG"则echo $var可得lang is zh_TW.UTF-8
+
+   单引号内的特殊字符则仅为一般字符 (纯文本)，如下所示：
+
+     var='lang is $LANG'则echo $var可得lang is $LANG
+
+使用\ 将$ 字符变为一般字符
+
+在一串指令的执行中，还需要藉由其他额外的指令所提供的信息时，可以使用反单引号『`指令`』或 『$(指
+
+令)』。特别注意，那个 ` 是键盘上方的数字键 1 左边那个按键，而不是单引号！ 例如想要取得核心版本
+
+的设定： version=$(uname -r)再echo $version可得『3.10.0-229.el7.x86_64
+ 
+若该变量需要在其他子程序执行，则需要以 export 来使变量变成环境变量：
+
+export PATH
+
+若变量为扩增变量时，使用PATH="$PATH":/home/bin 累加
+
+取消变量名 ：unset
+
+环境变量 = 全局变量  export a   
+
+bash 进入子程序，及去启动另一个shell
+
+cd /lib/modules/$(uname -r)/kernel  进入内核
+
+单引号（变量不起作用）、双引号（变量）、跳脱字符（\）、
+
+钱字号、反单引号(按键1旁边的点，先执行，执行结果作为外部输入信息)
+
+dos2unix  转换纯文本格式
+
+文件解压  tar -xzf filename    -xzvf  -czvf 
+
+导入环境变量   source export_env.sh
+
+sh update.sh bakup   备份
+
+卸载  sh install.sh clean
+
+还原  sh update.sh restore
+
+env 查看所有环境变量
+
+ps -aux  查看所有进程  pid  是进程号
+
+pgrep  名   看制定程序pid号
+
+cat /proc/PID/environ    看指定pid进程的环境变量
+
+env | tr '\n' \'0' 使用空格代替空行
+
+在cat ~/.bashrc 可以指定变量及别名
+
+echo $RANDOM  0-32767   获取随机数
+
+set 查看所有环境变量及自定义变量及函数库
+
+PS1 : 是数字1   每次按
+
+下 [Enter] 按键去执行某个指令后，最后要再次出现提示字符时， 就会主动去读取这个变数值了。
+
+上头 PS1 内显示的是一些特殊符号，这些特殊符号可以显示不同的信息
+
+设置PS1 ： cd /home    PS1='[\u@\h \w \A #\#]\S'  就是命令行中root@host...
+     
+    \d ：可显示出『星期 月 日』的日期格式，如："Mon Feb 2"
+  \H ：完整的主机名。举例来说，鸟哥的练习机为『study.centos.vbird』
+  \h ：仅取主机名在第一个小数点之前的名字，如鸟哥主机则为『study』后面省略
+  \t ：显示时间，为 24 小时格式的『HH:MM:SS』
+  \T ：显示时间，为 12 小时格式的『HH:MM:SS』
+  \A ：显示时间，为 24 小时格式的『HH:MM』
+  \@ ：显示时间，为 12 小时格式的『am/pm』样式
+  \u ：目前使用者的账号名称，如『dmtsai』；
+  \v ：BASH 的版本信息，如鸟哥的测试主机版本为 4.2.46(1)-release，仅取『4.2』显示
+  \w ：完整的工作目录名称，由根目录写起的目录名称。但家目录会以 ~ 取代；
+  \W ：利用 basename 函数取得工作目录名称，所以仅会列出最后一个目录名。
+  \# ：下达的第几个指令。
+  \$ ：提示字符，如果是 root 时，提示字符为 # ，否则就是 $ 啰～
+
+
+$号 ：代表目前这个Shell的线程代号:echo $$ 显示shell的pid号
+
+？号 ：代表上一个执行的指令所回传的值  
+    
+     如  12name=tcl   报错   使用 echo=$? 显示错误代码
+
+
+locale ：查看系统语言环境   locale  -a
+
+
+read ：读取来自键盘输入的变量
+
+    read -p 'please keyin your name:' -t 30 name
+    
+    echo $name
+
+declare : 声明变量类型
+
+声明数组 ： arr[1]=aa   arr[2]=bb   echo ${arr[1]}
+
+
+测试结构 :
+
+　　test expression  或    [ expression ] 前后有空格  
+
+整数比较 ：  -eq -gt -ge -lt -le  -ne 
+
+字符串比较 ：string  -n string  -z string    string1=string2   string1 != string2  最好使用双引号引起来
+
+     test    [ "qq" = "vv" ] 等号和中括号之间都有空格
+
+文件操作符 ：
+
+  test file_opreator File(文件名，目录，文件路径)
+
+       -d 目录  -e  是否存在   -f 普通文件  -s 长度是否为0 -r  -w  -x 读写执行权限
+
+
+逻辑运算符 ：
+   
+     ！非    -a  与     -o  或  
+
+
+判断 ：
+
+　if(表达式)  then  else  if 不能在一行中，可以使用分号（；）分开写在一行   fi出现多次
+
+exit status（整数） 在脚本中设置返回状态  可以使用echo $?看到执行返回值
+
+
+  if(表达式)then  elif(接表达式 相当于 else+if ）then     else  if  fi只出现一次   
+
+case 结构 :
+
+   case var in      遇到双分号结束case ，都没有则执行默认值*）
+
+    val1)
+       结果1;;
+ 
+    val2)
+       结果2;;
+   
+    *）
+      结果3;;
+esac
+
+let 运算符 提供+ - * / % **的运算  =号两边不能有空格  双引号引起来可以有空格  最好引起来
+
+二进制 ： 2#40   8进制 ： 8#40  16进制 ：16# 40 
+
+算数运算使用 let函数   直接r=2#20 是字符串，不会做算数运算
+
+
+
+for循环  
+   
+   列表for循环 :
+     for val in {list}   list为列表：1 2 3 4 5   简写 ：{1..5}  {1..100..2}  1-100中的所有奇数  
+     do                                                                     2为步数，相当于i=i+2
+     exp
+     done
+
+  通过seq命令用于for循环中  for i in $( seq 1 2 100)  1-100 步数为2
+
+  for var in {A..Z..3}; do echo $var; done
+
+
+  #!bin/bash
+  echo "argument: $#"
+  for i in "$*"
+  do
+   echo "$i" 
+  done             sh infor.sh 1 2 3  通过命令行向列表传递参数 $#为参数个数  $*参数值
+
+
+不带列表for循环 ： 由用户指定参数和参数个数
+
+类C风格for循环 ： 已知循环次数
+  
+  for((exp1; exp2;exp3))
+
+
+while 循环
+
+#!bin/bash
+num=10
+while (("$num">1))
+  do 
+    let "num--"
+    echo "$num"
+done                    记住：加$的不能参与操作（$sum）,sum才是变量，才能参与操作
+
+
+位置变量：
+ 
+ $# 代表命令行所有参数个数
+ $* 代表命令行中所有参数集合
+ $@ 代表所有参数，区分对待
+ $1-$9   10以上用大括号   ${10}   
+
+shift 使位置变量下移一位  $2 代替 $1 并使$#变量递减 当最后一个参数给用户后，$#=0,$*为空
+
+#!bin/bash
+echo "arguemnts :$#"
+while [[ "$*" != "" ]]  "$#" -ne 0
+  do 
+    echo "$1"
+    shift
+done
+
+until循环 ：与while相似，退出条件与while相反，为0时退出，即为假时执行
+
+echo -n  " " 打印空格  -n 不换行   -e  启动\转义  echo "" 空行
+
+退出循环 ：break   退出本次循环 ： continue
+
+select ：与case相似，适于与用户交互
+
+select  val in red yellow blue   参数列表也可以有命令行输入
+do 
+  echo "select $val"
+  break
+done
+
+
+linux中的函数 
+
+返回值只能是0或1  函数体内必须有命令
+
+directory(){
+
+  ls $1
+  echo "$(ls $1)" 
+  echo ""
+  let "filenum = 0"
+  let "drenum = 0"
+  
+  for val in $(ls)
+  do 
+  if [ -d $val  ]
+  then 
+   let "drenum++"
+  else
+  let "filenum++"
+  fi
+  done
+  echo "drenum=$drenum"
+  echo "filenum=$filenum"
+}
+
+directory
+
+获取直接参数值 ： $paramter     间接获取参数值 ： ${ ! parameter }
+
+函数返回值 ： return  0 或 1
+
+在函数中声明局部变量: local  相同则局部变量覆盖全局变量
+
+
+
+管道 ： |
+ 
+   ls -al | grep she   grep  查找与she匹配的行
+
+   ps -aux | less
+
+   ps -aux |wc -l   wc -l 计算记录条数
+
+
+sed 和 awk 命令 支持从文件中读取数据，也支持从管道读取数据
+
+   ls -l | sed -n '1,5p'   打印ls -l结果的1-5行
+
+   cat /etc/passwd | sed -n '/root/p'| sed -n '/nologin/p'
+
+ 实现变量值改变 ：
+
+     a="welcome  to   china"
+
+     replace="us"
+
+     echo $a|sed "s/china/$replace/g"
+    
+   sed [可选项] 命令  输入文件
+
+   
+   echo $a | awk '{print length($a)}'   使用awk处理字符串
+
+ 
+   echo $a | awk '{print substr($1,2,4)}'   $n 为awk的域
+
+
+   awk [-F 域分隔符]  'awk程序段'  awk中调用linux命令需要用双引号引起来
+
+   awk -F ':' '{print $2|"sort"}' /etc/passwd
+
+   当使用awk处理shell命令的输出时，需要引入getline幻术将命令的输出保存到变量中，awk在对
+   
+   输出进行处理
+
+   awk 'BEGIN{while (("ls /usr" | getline d)>0 )print d}'
+
+
+expr  处理字符串
+
+sort  排序
+
+df -k 查看文件系统详细信息
+  
+  df -k | awk '$4 > 1000000000'  第4域为剩余空间量
+
+
+cat tomongo.sh |sh param1 praram2   cat tomongo.sh |sh -f 313956
+
+
+
+
+I/O 重定向 ： 捕捉一个文件，命令程序或脚本，甚至代码块的输出，然后把输出作为输入发送给
+另一个文件，命令，程序或脚本
+
+   文件标识符，标准输入0，标准输出1，标准错误输出2，tee命令 利用exec实现I/O重定向
+
+   将shell脚本的标准输出复制一份到文件中，使用tee命令
+
+   who | tee output.txt   tee -a 将输入追加到文件后
+
+ps命令  对系统中进程进行检测控制  ps -aux   ps -alx   ps -ef 显示所有进程，环境变量，全格式
+
+    当cat 命令后不加参数，cat的输入为标准输入，即键盘输入  cat > newfile  将键盘输入写入文件
+，然后按ctrl+D结束对newfile的编辑，cat 和>组成简易文本编辑器
+
+   cat > io.txt   cat  >>io.txt    文件存在则追加，不存在则创建  
+
+   >| 强制覆盖文件  set -o 开启noclobber选项 开启时不允许覆盖文件，但对>| 失效
+
+    set -o noclobber   set -o  查看
+
+   文件标识符 FD  1-9    > 输出   < 输入  
+  
+  <<delimiter   作为分解符   将两个delimiter之间的内容作为输入  分界符要大写
+
+  exec  可以通过文件标识符打开或关闭文件，也可将文件定向到标准输入，标准输出定向到文件
+
+  n<  0为标准输入   8为0的副本，用于恢复FD 0
+  
+  0<&8  表示将FD8 复制到FD0 
+  
+  8<&-  表示关闭FD8 其他进程可以重复使用FD8
+
+  标准输入为键盘输入，重定向后改为文件输入，恢复后变成键盘输入
+
+  代码块重定向 ：是指在代码块内将标准输入或标准输出重定向到文件，在代码块之外保留默认状态，
+
+  可以重定向的代码块可以是while unitl for等循环结构  if else   函数
+
+seq num   产生序列  1-num
+
+高级重定向的使用 ：
+
+#!bin/bash
+ls . >| ./io.txt
+total=$(wc -l < io.txt)
+count=1
+for val in `seq $total`
+do
+  read filename
+
+  if [ "$filename" = "io.txt" ]
+  then 
+    break
+  else
+     let "count++"
+  fi
+done < io.txt
+
+echo "count=$count"
+read a
+echo $a
+
+if [ 1 == 1 ]; then echo 'true'; else echo 'false'; fi
+
+将$((string))  的内容算数替换
+
+eval命令  将参数作为命令行，让shell重新执行该命令行，shell命令处理的12个步骤
+
+p="|"   eval ls $p wc -l    直接使用ls $p wc -l不能使用，shell第一轮的处理中吧变量代入，
+
+然后eval命令使命令行重新提交到了shell上。
+
+
+sed命令：
+
+ 调用sed的三种方式
+ 
+  sed [选项]  'sed命令' 输入文件
+
+   ./sed脚本文件 输入文件
+   
+   定位文本：行号或正则表达式
+
+   sed编辑命令标识对文本进行何种处理，如打印，删除，追加，插入，替换
+
+   选项：-n 不打印全部  命令p打印指定行   sed -n '1p' 输入文件
+
+             sed -n '/文件/p' tcl.txt   模式匹配，打印包含“文件”的内容 ，大小写敏感
+
+
+    选项：-e 指定-e命令后的字符串为sed命令，当使用sed命令大于一个时使用
+
+            sed -n -e '/文件/=' -e '/文件/p' tcl.txt  打印匹配行的行号和内容
+
+
+    选项：-f 指定调用sed脚本命令   
+
+             #!/bin/sed  -f 
+             /wenjian/a\append text                       
+   
+          sed  '/while/a\文件' io.txt 在匹配模式后追加文本，a\命令表示追加  执行脚本 ：./append.sed input.txt
+
+
+    源文件替换 s使用-i命令   sed -i.bak "s/print/echo/g" year.sh  源文件替换，并生成备份文件 year.sh.bak
+
+
+
+which sed ：查看sed命令的路径
+
+          sed -n '$'p io.txt  打印文件走后一行   a\ 追加  i\ 插入  c\ 修改一行   d 删除  s\匹配字符串\替换字符串\ 替换  
+          sed '$d' io.txt  删除最后一行
+ 
+          sed 's/sssssssssss/文件/' io.txt 替换匹配行    sed 's/aa/ss/g'  io.txt  g命令匹配所有 使用&表示被替换字符串
+
+          sed ‘s/aa/(&)/' io.txt   表示使用（aa）替换aa   
+
+          {}与-e相似，执行多个命令 {=，p}
+
+	  sed -n '1,$ w io.txt' tcl.txt     实现文本复制1到最后一行  w表示重定向
+
+          ^表示以什么开头，.* 表示以是什么结尾
+
+
+awk编程：
+
+
+ 从文件或字符串中基于指定规则浏览和抽取信息，在抽取信息的基础上，才能进行其他文本操作
+
+ 执行过程： BIGIN--主输入循环--END 
+
+ 调用方式 ：shell脚本  命令行
+
+     awk [-F 域分割符] 'awk程序段' 输入文件 
+
+     awk -f awk脚本文件 输入文件
+
+    awk模式匹配  awk语句都由模式和动作组成。
+
+    awk '/^$/{print "this is a blank line"}' year.sh    //之间是模式匹配  {}之间是动作
+
+   awk模式匹配 ：记录（Records）和域(Fields）
+
+   awk将每个输入文件行定义为记录，行中的每个字符串定义为域，域之间用空格tab键或其他符号分隔，
+
+   分隔的符号叫做分隔符。
+
+   $操作符指定执行动作的域$1,$2...$0表示所有域
+ 
+     -f表示调用脚本   -F表示改变分隔符   awk -F'\t' '{print $1}' input   改为tab键为分隔符  默认是空格键
+
+     通过环境变量FS改变分隔符 {FS=","}
+
+     awk进行模式匹配时使用条件语句：if、if/else 、if/else else
+
+     awk 'BEGIN {PS=":"} {if($3>$4) print $0}' /etc/passwd
+
+     awk 'BEGIN {PS=":"} $1~/root/'  /etc/passwd   ~表示匹配正则
+
+     多条件匹配：使用逻辑符号    ||  &&   !
+
+     awk -F':' '{if($4~94) print $0}' /etc/passwd   ~表示模糊匹配   $0表示所有域
+
+     cat cmdline |awk -F':' '{for(a=1;a<=NF;a++){print $a}}' for循环
+   
+
+   awk表达式 ：不用指定类型，字符串和数字，awk根据表达式上下文确定使用那个值，默认值为0，字符串默认为空
+
+     awk '/^$/{print x+=1}' year.sh   
+  
+     awk 'BEGIN {FS=":"} {print $2}' scoreawk.txt 
+
+    
+    awk系统变量： 
+
+       分两种：第一种改变awk的默认值，如域分隔符     第二种用于定义系统值，如域数量，当前记录数，当前文件名
+
+       awk 'BEGIN {FS=":"} {print NF,NR,$0} END {print FILENAME}' scoreawk.txt  NF域个数   NR记录数  FILENAME 输入文件名
+
+   
+
+    awk格式化输出 ： printf{格式化控制符，以%开始，参数}   修饰符，格式符（%s，%d，%c...)
+
+    awk 'BEGIN {FS=":"} {printf("%s\t%d\n",$1,$2)}' scoreawk.txt 
+
+    awk 内置字符串函数
+
+       awk 'BEGIN {print length("2323wedwe")}'
+
+       awk 'BEGIN {IGNORECASE=1;print match("wewer2","EW")}'   IGNORECASE忽略大小写
+
+       awk 'BEGIN {str="wqwddwe";sub(/dd/,"aa",str);printf("%s\n",str)}'
+
+
+
+   向awk脚本传递参数：在命令行中进行赋值，变量赋值在脚本之后，输入文件之前 
+
+   awk 'BEGIN {FS=":"} {if(NF!="MAX") print("the line "NR" dose not "have" "MAX" field")}' MAX=2 have=1 scoreawk.txt 
+
+   awk '{if(a==1) print a ;else if(b==2) print 10;else print "er"}' a=2  b=1 scoreawk.txt   条件判断
+
+   cat scoreawk.txt | awk -F':' '{print $1}'
+
+   awk '{for(i=0;i<6;i++){print i}}' scoreawk.txt
+
+
+  数组 ：array[index]=value
+
+     关联数组：指数组的索引可以是字符串，也可以是数字   相当于map  awk都是关联数组
+
+        awk 'BEGIN {data[11.11]=1111;CONVFMT="%d";printf("<%s>\n",data[11.11])}'   CONVFMT="%d"  系统变量转化为整数
+  
+      awk 循环访问关联数组 ： for(var in array) print array[var]
+
+      判断元素是否在数组中：index in array  返回1则array[index}存在
+
+         awk 'BEGIN {data[a]=12;if( a in data ) print data[a]}'
+
+         awk 'BEGIN {split("aa,bb,cc,dd",name,",");for( var in name) print name[var]}'  拆分字符串为数组，循环打印
+
+     awk系统变量中有两个是以数组形式提供的：ARGV---元素个数 ，ENVIRON---存储了Linux操作系统的环境变量
+
+         awk 'BEGIN {for( var in ARGV ) print ARGV[var],ARGC}'
+
+    
+     env | awk -F'=' '/\<PATH\>/{print $1,$2}'  查看PATH环境变量  echo $PATH
+
+     awk -v  在BEGIN字段结束前是拿不到传的参数值，使用-v a=11 参数能使在BEGIN执行之前，获取参数值，能在BEGIN中打印出来
+
+         awk -v a=1 'BEGIN {print a}'
+
+     awk -v RS="" '{gsub("\n","@");print;}' scoreawk.txt   RS指定记录空格符，记录即行  把文件块变成一行
+
+     awk -v a=2 -v b=2 '$a==$b{print 111}' a.txt
+
+
+
+sed 是流操作，操作文件内容   awk是查看文件操作
+
+    
+
+    alias 别名： unalias [-a][name]  -a删除所有存在的别名
+
+    脚本中使用别名 ：需要使用 shopt -s expand_alisases 打开别名扩展
+
+    在 /etc/profile  中添加alias sta=”cd /home/stars/gui"  永久添加别名  source /etc/profile
+
+  
+   列表 ：&&与列表 当某一命令返回false时结束  ||或列表  当某一命令返回true时结束
+
+ 与列表：
+
+   if [ -n "$1" ] && echo "first argument" && [ -n "$2" ] && echo "second argument"
+   then 
+      echo "two argument"
+   else
+      echo "less two argument"
+   fi
+   exit 0
+
+ 
+   数组的基本用法 ：获取数组值 ${array[x]}    赋值 city[0]=1 city[1]=2   允许数组出现空值
+
+  使用圆括号将一组值赋给数组 ：city=(1 2 3 4 5)默认按顺序赋值  可以指定位置赋值 ：（1 2 [10]=10 11 [1]=12)
+
+   查看所有非空元素：echo ${arr[*]} 或 ${arr[@]}   数组长度：echo ${#arr[*]}
+ 
+   for i in ${arr[*]}; do echo $i; done
+
+  数组的特殊用法：字符串操作
+
+    echo ${arr[*]:0}  抽取所有元素
+
+    echo ${arr[*]:0:2} 抽取0-2之间的元素，不包括2
+
+    echo ${arr[@]#e*f}  删除e-f最小串    echo ${arr[@]##e*f}  删除最大串
+
+    echo ${arr[@]/42/55}  替换匹配的第一个   echo ${arr[@]//42/55}  替换所有匹配的
+
+
+   数组也可以存放read命令所读入得用户输入参数   declare -a arr  声明arr为数组类型   -i是数字型  默认字符串
+
+     read -a  arr  将读入的参数放入数组arr中
+
+   unset可以用于清空数组元素   unset array[1] 清空arr[1]元素，长度减一     
+
+ 
+   数组连接： arr3=(arr1 arr2)  indec=0  length=${#arr[@]}  while [ $index -lt $length ]
+ 
+
+ 
+   数据结构：指相互之间存在一种或多种特定关系的数据元素集合，如数组，堆栈，队列，链表
+
+
+
+正则表达式 ： 
+
+    空行的表示 ^$   ^在[]中时表示取反   [A-Za-z]*
+   
+    \<\> 符号 精确匹配  如\<the\>  匹配zhe这个单词  但不匹配包含的，如them
+
+    \{\} 与*相似，可以指定出现次数  \{n\}  \{n，\}    \{n，m\}   
+
+    通配 ：.[^txt]*   过滤以txt为文件结尾的文件  {}在通配中配置里面表达式的所有集合
+
+    
+
+
+
+grep命令:
+
+  全面搜索正则表达式并把行打印出来，能使用正则表达式搜索文本
+
+  grep [选项] [模式] [文件...]    grep -w  精确匹配   -i 不区分大小写
+
+  
+egrep :支持扩展的正则   fgrep ：不支持正则
+ 
+
+
+
+文件的排序、合并和分割 ：
+
+  
+  sort排序    uniq去重，与sort -u相似    join合并（两个排序的文件）   cut提取  paste粘贴   
+
+  split分割   tr过滤    tar压缩解压 
+
+
+  sort [选项]  [输入文件]
+
+  sort -t: -k2n scoreawk.txt   -t指定域分隔符   -k2指定第二域   -n指定以数字排序   -r倒叙排列  -u去重  -o输出到文件
+
+  awk -v RS="" '{gsub("\n","@");print;}' scoreawk.txt 
+
+ 
+  cut -c1-4 scoreawk.txt  截取1-4个字符     cut -c3  截取第三个字符
+
+  cut -d: -f1,3 scoreawk.txt  -d指定域分隔符   -f1,3 截取第一域和第三域
+
+
+  paste命令，可以将来自不同文件的数据连接在一起
+
+    paste [选项] 文件1 文件2
+ 
+
+  tr -d n <scoreawk.txt  删除文件内所有n        tr -d A-Z 删除所有大写字母
+
+  tr "a-z" "A-Z" < scoreawk.txt  大小写替换
+
+  cat cmdline |tr  ":" "[\012*]"  使用换行符替换冒号
+
+
+  tar -cf sh.all *.sh  将所有sh文件放进新包中
+
+  tar -tf sh.all   显示包中所有文件
+
+  tar -rf  sh.all  a.txt   将a.txt添加到包中  
+
+  tar -uf  sh.all  a.txt   跟新包中a.txt文件，不包含则添加，能代替-r命令
+
+ 
+  tar，gz，tar.gz,tgz,Z  压缩格式
+
+  gzip sh.all 将包压缩    -cf+gzip  ==  tar -zcvf
+
+  gzip -d  sh.all.gz 还原成sh.all包
+
+
+  cat sh.all | wc -c 查看文件字节数   wc-l文件行数  wc-wcl
+
+
+  >>/dev/null 2>&1  表示将标准输出和标准错误输出重定向到/dev/null文件中，在/dev/null中的内容不会保存，不会在终端上显示
+
+       2>&1的意思是FD为2的输出等同于FD为1的输出，即标准输出和标准错误输出都输出到/dev/null中
+
+
+
+
+df命令：查看已经加载的设备驱动的主设备号
+
+swapon -s   查看当前系统的虚拟内存情况
+    
+
+cat linux.txt | tr -cs "[A-Z][a-z]" "[\012*]" |sort |uniq -c | sort -nr -k1 |head -n 5  获取文本中单词出现的频率
+
+cat cmdline |awk -F':' '{for(a=1;a<=NF;a++){print $a}}' 
+
+      
+$RANDOM ： 随机数
+
+===============================================================================
+
+crontab -u root -l 查看调度表
+
+cat /etc/crontab
+
+service crond restart
+
+crontab ：每隔一段时间调度一些命令的执行，root的随机密码就是这么生成的
+  
+  echo `uuidgen` |tee /root/npsw.log |passwd root --stdin
+
+==============================================================================
+
+tee命令 ：从标准输入设备读取数据，将其内容输出到标准输出设备，同时保存文件
+
+echo `date +%Y-%m-%d` 获取当前时间
+
+ntpdate :时间同步命令
+
+
+============================================================
+定时任务：
+
+#!bin/sh
+while true
+do
+ps -ef | grep jkvoiceconvert | grep -v 'grep'
+if [ "$?" -eq 1 ]
+then
+sh jkstart.sh
+echo "process has been restarted!"
+else
+echo "process already started!"
+fi
+sleep 10
+done
+===============================================================
+
+后台挂起程序，退出bash不停止：
+
+nohup java -cp /home/jkvoiceconvert/lib/jkvoiceconvert.jar com.jkvoiceconvert.VoiceDispose > /home/jkvoiceconvert/jk.log 2>&1 &
+
+nohup sh restart.sh >restart.log 2>&1 &
+
+
+================================================================
+
+查找目录和文件
+
+find / -name dir|file -type d|f 
+
+
+==================================================================
+
+jps  查看java程序的进程
+
+pwdx + pid  查看java程序的路劲
+
+jstat -gcutil + pid +interval  查看jvm的GC情况
+
+==================================================================
+
+ll -t 排序查看  ll -rt 倒叙查看  ll -h  以M为单位查看文件大小
+
+
+===================================================================
+
+find ./ ! -newer 11.mpeg | xargs rm   删除11.mpeg以后的文件  去掉感叹号删除以前的文件
+
+xargs  将之前的数据当做后面命令的参数来执行
+
+find /home/stars/gui/stars/resources/jkzkmanage/taskmanage/wx/file -name *.wav -ctime +20 -type f
+
+-ctime 修改时间是20天以前的*.wav文件   
+
+find /home/stars/gui/stars/resources/jkzkmanage/taskmanage/wx/file -name *.wav -atime +20 -type f -exec rm {} \;
+
+-exec rm {} \; 和 xargs rm类似  {}为find的结果 \;表示exec结束
+
+===================================================================
+
+uuidgen 生成UUID
+
+
+===================================================================
+
+统计：
+
+wc -c[字节数]
+
+   -l[行数]
+   
+   -m[字符数]
+
+   -w[统计字数]
+
+   -L[打印最长行的长度]
+
+===================================================================
+
+echo `uuidgen` |tee /root/npsw.log |passwd root --stdin
+
+  tee命令用户将数据重定向到文件，另一方面还可以提供一份重定向数据的副本作为后续命令的stdin
+
+===================================================================
+
+挂载目录：
+
+vim /etc/exports  编辑文件，配置挂载目录和配置项
+
+/home/stars/gui/stars/jkfile *(rw,sync,no_root_squash)
+
+mount -t nfs 12.15.5.172:/home/stars/gui/stars/jkfile /home/stars/gui/stars/jkfile
+
+===================================================================
+
+排序取10条：
+
+ls -l | sort -r | tail -10  sort -r 取反   head
+
+
+====================================================================
+
+type命令查看命令的类型:
+
+内置命令 type pwd
+
+外部命令 type find
+
+====================================================================
+
+which whereis whatis 
+
+man  --help/-h
+

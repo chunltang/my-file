@@ -1,0 +1,146 @@
+1.修改字段名  alter table jk_zk_record rename column ws_clueid to clueid   
+
+2.添加字段及默认值   alter table jk_zk_record add column  ws_clueid varchar(10) DEFAULT '0'
+
+   修改、添加默认值   alter table jk_fanting_statistics alter column messagesta set default '0'
+
+   修改字段长度  alter table jk_fanting_statistics   alter column  zkno type varchar(200)
+
+
+
+3.删除字段  alter table jk_zk_record drop column ws_clueid 
+
+4.多个字段去重 select distinct net_name,net_classify from JK_NET_INFO
+
+5.使用子查询批量更新 update JK_NET_DISPATCH_DETAIL set status = '1' WHERE ZK_ID = '350092' and net_name in (select nename from JK_OPS_RESULT where taskid='350092' and status='0')
+
+
+=================================================================================================================================================================================================
+
+6.case when的使用  CASE WHEN b.use_cnt IS NULL THEN   1 ELSE   0  END 
+
+  WITH d AS (
+	SELECT
+		b.send_request_unit,
+		LOCATION,
+		COUNT (A .zk_request_id) cnt
+	FROM
+		JK_ZK_RECORD A
+	JOIN JK_ZK_REQUEST_LOG b ON A .ZK_REQUEST_ID = b.ZK_REQUEST_ID
+	WHERE
+		A .zk_status IN ('10', '11', '12')
+	AND A .zk_id != '0'
+	GROUP BY
+		b.send_request_unit,
+		LOCATION
+  ) SELECT
+	case when (G.send_request_unit is null) then f.send_request_unit else G.send_request_unit end as orgid,
+	G.cnt remoteuse,
+	f.cnt localuse
+  FROM
+	(
+		SELECT
+			*
+		FROM
+			d
+		WHERE
+			LOCATION = '1'
+	) G
+  FULL JOIN (
+	SELECT
+		*
+	FROM
+		d
+	WHERE
+		LOCATION = '0'
+  ) f ON f.send_request_unit = G .send_request_unit
+
+
+SELECT count(*) s,CASE WHEN USERID='1747294680' THEN 'my' ELSE 'other' END  FROM MONIT_DETAIL_JKWXGROUP WHERE TASKID='988141' GROUP BY  CASE WHEN USERID='1747294680' THEN 'my' ELSE 'other' END
+>>>>>>>>>>>>
+SELECT GROUPID,sum(CASE WHEN USERID='1747294680' THEN 1 ELSE 0 END) benfang,sum(CASE WHEN USERID!='1747294680' THEN 1 ELSE 0 END ) qita  FROM MONIT_DETAIL_JKWXGROUP WHERE taskid='988141' GROUP BY GROUPID
+
+
+==================================================================================================================================================================================================================
+
+5.修改字段类型
+
+   alter table monit_track_summary_jk alter column VIRTUAL_IDENTITY_CARD type VARCHAR(500)
+
+
+6.修改字段名
+
+  alter table monit_track_summary_jk rename real_identity to VIRTUAL_IDENTITY_CARD
+
+7.字段注释
+
+  COMMENT ON TABLE "public"."monit_detail_jkwxfriendcircle" IS '微信朋友圈';
+
+8.创建索引
+
+  CREATE INDEX "idx_monit_detail_jkwxfriendcircle_capturetime" ON "public"."monit_detail_jkwxfriendcircle" USING btree (capturetime);
+
+8.空数据排序在最后
+
+ order by curtime nulls last/nulls first
+
+9.创建序列：
+  
+   创建表时声明：id serial not null
+
+  create sequence person_info_id_seq start with 1 increment by 1 no minvalue no maxvalue cache 1
+
+  查看序列：select * from person_info_id_seq
+
+  添加序列：alter table person_info alter column id set default nextval('person_info_id_seq') 
+
+  使用：insert into person_info values(nextval('person_info_id_seq'),'13297378486','tcl','430903','1531729450')
+
+
+10.数据类型转换
+
+  update jk_zk_record set redeployflag=cast(redeployflag as INT)+2||'' where zk_id='371386'
+
+
+11.去重使用
+
+  select service_provider,count(distinct net_name) from jk_net_info group by service_provider
+
+
+12.case when的使用
+
+    select case when service_provider='01' then '电信' when service_provider='03' then '联通' else '移动' end 运营商 , count(distinct 
+    
+    net_name) from jk_net_info group by service_provider
+
+
+13.获取当前时间
+
+  select (to_char(now(), 'YYYYMMDDHH24MISS'::text))
+
+14.时间转时间戳
+
+  select EXTRACT(epoch from cast(strsendtime as TIMESTAMP)) from monit_detail_searchfriendcirclemsginfo 
+
+
+15.统计，使用case when 列转行   使用函数生成字段
+
+  select zk_id,count(case status when '0' then status else null end) suc,count(case status when '1' then status else null end) fail
+
+  from jk_net_dispatch_detail where zk_id in ('456248','454995') group by zk_id
+
+    使用连表实现列转行：
+
+  
+  select d.zk_id ,t1.fail,t2.suc from jk_zk_record d join (select zk_id,count(zk_id) fail from jk_net_dispatch_detail where  
+  status='0'  group by zk_id) t1 on  d.zk_id=t1.zk_id  
+  
+  join (select zk_id,count(zk_id) suc from jk_net_dispatch_detail where status='1' group by zk_id) t2 on  d.zk_id=t2.zk_id  
+
+  where d.zk_id in ('456248','454995')
+  
+  
+  
+
+
+

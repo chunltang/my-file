@@ -1,0 +1,391 @@
+JSONArray jsonArray    List list=(List)jsonArray.toCollection() json数组转List   JSONArray 相当于list结构的数据
+
+JSONObject jsonObject  jsonObject.containsKey("key") JSONObject相当于map结构的数据
+
+JSONArray jsonArray =jsonObject.getJSONArray("key")    JSONObject的剑指转JSONArray  {"key":"[1,2,3]"}
+
+ List<Map<String, String>> exportList = JSONArray.fromObject(keepExportData);
+ 
+Map props = JSONUtils.getProperties(jsonObject);将JSONObject直接转成Map
+
+uniqueId.contains(",")  字符串判断是否包含字符
+
+jsonObject.has("key")  jsonObject.remove("key")
+
+----------------------------------------------------------------------------
+
+String path=Thread.currentThread().getContextClassLoader().getResource("").getPath()  获取classes路径
+
+this.getClass().getResource("") 获取相对路径
+
+this.getClass().getResource("/")  获取classes路径
+
+--------------------------------------------------------------------
+
+实现filenameFilter接口（文件名过滤器）可以过滤掉不符合规则的文件
+
+File[] files = file.listFiles(new FilenameFilter(){
+				public boolean accept(File dir, String name) 
+				{
+					long currentTime = DateUtils.getCurrentLongTime();
+					long fileModifyTime = dir.lastModified()/1000;
+					return (currentTime - 1 * 24 * 3600) > fileModifyTime ;
+				}
+			});
+
+
+for(File singleFile : files)
+			{
+				singleFile.delete();
+			}
+
+-------------------------------------------------------------------
+
+public void queryUserAuths(){
+		String allParamBeans = getParameter("allParamBeans", "");
+		JSONArray jsonArray = JSONArray.fromObject(allParamBeans);
+		List<AllParamBean> list=new ArrayList<>();
+		for(int i=0;i<jsonArray.size();i++){
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+			AllParamBean allParamBean = (AllParamBean)JSONObject.toBean(jsonObject,AllParamBean.class);
+			list.add(allParamBean);
+		}
+		IdentityExtend ie= new IdentityExtendImpl();
+		List<BatchResultBean> batchResultBeans = ie.batchInfoWithAppType(list);
+		JSONObject json=new JSONObject();
+		json.put("list",batchResultBeans);
+		printOutForAJAX(json);
+	}
+
+-----------------------------------------------------------------------------------------------
+
+路径问题：
+
+ /:为根目录   ../:为上一级目录    没有斜杠则为相对当前目录
+
+
+<c:set var="path" value="${pageContext.request.contextPath}"/>  获取路径
+
+-------------------------------------------------------------------------------------
+
+list转数组：
+
+sqlList.toArray(new String[sqlList.size()])
+
+-------------------------------------------------------------------------
+
+java递归:
+
+public void getOrgsbyParentId() {
+		String orgId = this.request.getParameter("orgId");
+		orgId="3260";
+		List<String> orgs=new ArrayList();
+		orgs.add(orgId);
+		List<String> list = deGuiOrg(orgId, orgs);
+	}
+	public List<String> deGuiOrg(String parentOrg,List<String> orgs){
+		List<Org> orgList = AuthAPI.getInstance().getChildrenByOrgId(parentOrg);
+		if(!CommonUtils.isCollectionEmpty(orgList)){
+               for(Org org:orgList){
+				   String groupId = org.getGroupId();
+				   orgs.add(groupId);
+				   if(org.getIsParent()==1){
+					   orgs = deGuiOrg(groupId, orgs);
+				   }
+			   }
+		}
+		return orgs;
+	}
+
+
+java 数据导入excel：
+
+  使用poi架包传值excel：Row行 Cell列  Workbook：excel  Sheet  CellStyle   Font
+  OutputStream outputStream = response.getOutputStream();
+  response.setCharacterEncoding("UTF-8");
+  设置文件下载：
+  response.setHeader("Content-disposition", "attachment;filename="+new String(filename.getBytes(), "ISO-8859-1")); 
+  设置文件类型：
+  response.setContentType("application/ms-excel");
+
+
+解析xml:
+
+ /**返回指定路径节点*/
+    public static List<Element> getElement(String path,Element element){//path:wx_query_type/item
+        List<Element> elements=null;
+        if(path!=null){
+            if(path.indexOf("/")>0){
+                String s1 = path.substring(0, path.indexOf("/"));
+                String s2= path.substring(path.indexOf("/")+1,path.length());
+                 elements = element.elements(s1);
+                 if(elements.size()>0){
+                     elements = getElement(s2, elements.get(0));
+                 }
+            }else{
+                elements = element.elements(path);
+            }
+        }
+        return elements;
+    }
+  
+            SAXReader saxr=new SAXReader();
+            InputStream in = WxXmlUtils.class.getClassLoader().getResourceAsStream(xmlConfigPath);
+            document=saxr.read(in);
+            Element root = document.getRootElement();
+            List<Element> elements = getElement("wx_query_type/item", root);
+           for(Element e:elements){
+                List<Attribute> attrs = e.attributes();
+                Map map=new HashMap();
+                for(Attribute attr:attrs){
+                    String name = attr.getName();
+                    String value = attr.getValue();
+                    map.put(name,value);
+                }
+               queryTypeList.add(map);
+            }
+
+
+
+----------------------------------------------------------------------------------
+/**根据子单是不是指定的父单位*/
+
+public boolean getParentsByChrId(List<DepartTreeNode> list,String chrId,String prentId,boolean flag){
+             for(DepartTreeNode node: list){
+             	   if(node.getId().equals(chrId)){
+             	   	    if(node.getpId().equals(prentId)){
+							flag=true;
+						}else{
+							chrId=node.getpId();
+							if (chrId.equals("200")) {
+								return flag;
+							}
+							flag=getParentsByChrId(list,chrId,prentId,flag);
+						}
+				   }
+			 }
+			 return flag;
+	}
+
+
+----------------------------------------------------------------------------------
+
+<%
+   String path = request.getContextPath(); 项目路径
+
+   String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path + "/"; 项目绝对路径
+%>
+<c:set var="cp" value="<%=basePath%>"/>
+
+
+
+---------------------------------------------------------------------------------
+
+生成excel文件：
+
+  private void creatExcelFile(List<Map<String, String>> exportData) {
+        Row row = null; // 行
+        Cell cell = null; // 列
+        int index = 0; // 索引
+        FileOutputStream fos = null;
+        try {
+            Workbook wb = new HSSFWorkbook(); // 创建excel
+            Sheet sheet = wb.createSheet("网元详情数据"); // 创建sheet
+            for (int i = 0; i < exportList.size(); i++) {
+                sheet.setColumnWidth(i, 12000);//设置列的个数以及列宽
+            }
+            // 首先填充标题
+            row = sheet.createRow(0); // 创建一行
+            CellStyle hcStyle = wb.createCellStyle();
+            // 设置border
+            hcStyle.setBorderBottom(hcStyle.BORDER_THIN);
+            hcStyle.setBorderLeft(hcStyle.BORDER_THIN);
+            hcStyle.setBorderRight(hcStyle.BORDER_THIN);
+            hcStyle.setBorderTop(hcStyle.BORDER_THIN);
+            // 设置水平对齐
+            hcStyle.setAlignment(hcStyle.ALIGN_CENTER);
+            // 设置字体
+            Font f = wb.createFont();
+            f.setBoldweight(f.BOLDWEIGHT_BOLD);
+            f.setFontHeightInPoints((short) HEARDFONTHEIGHTINPOINTS);
+            hcStyle.setFont(f);
+            for (Map<String, String> singleMap : exportList) {
+                cell = row.createCell(index); // 创建一列
+                cell.setCellValue(singleMap.get("CNAME")); // 设置列头中文描述
+                cell.setCellStyle(hcStyle); // 设置表头样式
+                index++;
+            }
+            index = 0;
+            CellStyle cellStyle = wb.createCellStyle();
+            // 设置border
+            cellStyle.setBorderBottom(cellStyle.BORDER_THIN);
+            cellStyle.setBorderLeft(cellStyle.BORDER_THIN);
+            cellStyle.setBorderRight(cellStyle.BORDER_THIN);
+            cellStyle.setBorderTop(cellStyle.BORDER_THIN);
+            // 设置水平对齐
+            cellStyle.setAlignment(cellStyle.ALIGN_CENTER);
+            // 设置垂直对齐
+            cellStyle.setVerticalAlignment(cellStyle.VERTICAL_CENTER);
+            // 设置是否自动换行
+            cellStyle.setWrapText(true);
+            Font f1 = wb.createFont();
+            f1.setFontHeightInPoints((short) BODYFONTHEIGHTINPOINTS);
+            cellStyle.setFont(f1);
+            if (null != exportData && exportData.size() > 0) {
+                for (int i = 0; i < exportData.size(); i++) {
+                    row = sheet.createRow(i + 1); // 创建一行
+                    for (Map<String, String> singleMap : exportList) {
+                        cell = row.createCell(index); // 创建一列
+                        String key = singleMap.get("ENAME");
+                        String value = String.valueOf(exportData.get(i).get(key));
+                        if (value.indexOf("black") != -1) {
+                            value = value.replaceAll("\\&[a-zA-Z]{0,9};", "").replaceAll("<[^>]*>", "").trim() + "(黑)";
+                        } else {
+                            value = value.replaceAll("\\&[a-zA-Z]{0,9};", "").replaceAll("<[^>]*>", "").trim();
+                        }
+                        cell.setCellValue(value); // 设置列值
+                        cell.setCellStyle(cellStyle); // 设置表格内容单元格样式
+                        index++;
+                    }
+                    index = 0;
+                }
+                // 创建文件 写入
+                fos = new FileOutputStream(filePath);
+                wb.write(fos);
+                exportFlag = 1;//导出成功
+            } else {
+                exportFlag = -1;//没有数据
+            }
+        } catch (Exception e) {
+            ArgoLog.error("写入Excel失败", e, ConstParams.LOGGER);
+            exportFlag = -2;//导出异常
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.flush();
+                } catch (IOException e) {
+                    ArgoLog.error("导出文件输出流flush失败！", e, ConstParams.LOGGER);
+                }
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    ArgoLog.error("导出文件输出流close失败！", e, ConstParams.LOGGER);
+                }
+            }
+        }
+
+    }
+
+
+--------------------------------------------------------------------------------
+有返回值通用线程
+
+public class ServiceThread  implements Callable{
+    public Class<?> className;
+    public String methodName;
+    public Object []params;
+    public ServiceThread(){}
+    public ServiceThread(Class<?> className, String methodName,Object []params){
+        this.className=className;
+        this.methodName=methodName;
+        this.params=params;
+    }
+    @Override
+    public Object call() throws Exception {
+        Class [] classes=new Class[params.length];
+        Object invoke=null;
+        if(params.length>0){
+            for (int i = 0; i < params.length; i++) {
+                classes[i]=params[i].getClass();
+            }
+        }
+        try {
+            Method method = className.getMethod(methodName, classes);
+             invoke = method.invoke(className.newInstance(), params);
+        } catch (Exception e) {
+            ArgoLog.error("监听反射函数"+className+"."+methodName+"()执行失败！",e, CommonConfig.LOGGER);
+        }
+        return invoke;
+    }
+}
+
+	ServiceThread sh1=new ServiceThread(TaskShowDao.class,"getResultCntByRuleids",params1);
+	Future re1 = ConstParams.pool.submit(sh1);
+        Map<String, Object> historyCntMap =(Map<String, Object> ) re1.get();
+
+
+-----------------------------------------------------------------------------------
+
+java迭代器的remove方法会将迭代对象的元素删除
+
+-----------------------------------------------------------------------------------
+
+数据类型转换：将map类型数据保存到转换类中
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class MapConvertor {
+    private List<MapEntry> entries=new ArrayList<MapEntry>();
+
+    public void addEntry(MapEntry entry){
+        entries.add(entry);
+    }
+
+    public List<MapEntry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(List<MapEntry> entries) {
+        this.entries = entries;
+    }
+
+    public static class MapEntry{
+        private String key;
+        private Object value;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public void setValue(Object value) {
+            this.value = value;
+        }
+
+        public MapEntry(){
+            super();
+        }
+
+        public MapEntry(Map.Entry<String,Object> entry){
+            super();
+            this.key=entry.getKey();
+            this.value=entry.getValue();
+        }
+
+        public MapEntry(String key,Object value){
+            super();
+            this.key=key;
+            this.value=value;
+        }
+    }
+}
+
+======================================================================
+
+在tomcat的conf/server.xml的Host节点里加静态文件配置路径：
+
+<Context docBase="/home/stars/gui/stars/jkfile" reloadable="true" debug="0" path="/jkfile" />
+
+
+======================================================================
+
+在java中，for循环内部报错，可以使用try{}finnaly{continue}继续执行

@@ -1,0 +1,81 @@
+1.类使用泛型
+
+  class Person<T> {
+   
+      private T age;
+	  
+	  set(T age);
+	  
+	  T get();
+  
+  }
+  
+  通过反射获得 T.class：
+  abstract public class BaseHibernateEntityDao<T> extends HibernateDaoSupport {
+  private Class<T> entityClass;
+  public BaseHibernateEntityDao() {
+        entityClass =(Class<T>) ((ParameterizedType) getClass()
+                                .getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+  }
+  
+  
+2.方法使用泛型
+
+  public <T> void fun(Person<T> p){}   定义格式在返回值前面，参数里要有相应的<T>
+  
+  public <T> T  jsonToBean(String jsonStr,Class target);
+  说明：
+  1）public 与 返回值中间<T>非常重要，可以理解为声明此方法为泛型方法。
+  2）只有声明了<T>的方法才是泛型方法，泛型类中的使用了泛型的成员方法并不是泛型方法。
+  3）<T>表明该方法将使用泛型类型T，此时才可以在方法中使用泛型类型T。
+  4）与泛型类的定义一样，此处T可以随便写为任意标识，常见的如T、E、K、V等形式的参数常用于表示泛型。
+  
+  
+3.子类使用泛型(泛型的继承)
+
+  class Student<T> extends Person<T> {}   子类泛型确定后，父类泛型也确定
+  
+  
+4.接口使用泛型
+
+   interface Person<T> {
+       set(T age);
+	   T get();
+   }
+   
+   
+5.受限泛型
+
+   声明泛型的时候可以指定泛型的上限和下限
+   
+   public class Student<T extendx Number>{}   上限
+   
+   public class Student<? super String>{}   下限，T只能是String类或者其父类
+   
+   
+6.通过反射获取方法的返回类型对象
+
+   Type type=method.getGenericReturnType()
+   
+   if(type instanceof ParameterType)   判断该type对象能不能转型为ParameterType
+   
+   ParameterType ptype=(ParameterType)type;
+   
+   Type[] types=ptype.getActualTypeArguments();  得到参数化类型的数组
+   
+   for(Type t:types){
+      Calss returnTy=(Class)t;  转化为class对象
+   }
+   
+   
+   //Map为空时返回空字符串,使用时返回的值是什么类型就是返回什么类型，调用方法后不需要再做强转了
+    public static <T> T  keyExists(Map paramMap, Object key){
+        if(paramMap!=null&&paramMap.containsKey(key)){
+            return  (T)paramMap.get(key);
+        }
+        return null;
+    }
+   
+   
+   

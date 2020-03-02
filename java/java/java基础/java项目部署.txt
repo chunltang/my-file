@@ -1,0 +1,5 @@
+后台挂起程序，退出bash不停止：
+
+nohup java -cp /home/jkvoiceconvert/lib/jkvoiceconvert.jar com.jkvoiceconvert.VoiceDispose > /home/jkvoiceconvert/jk.log 2>&1 &
+
+nohup sh restart.sh >restart.log 2>&1 &

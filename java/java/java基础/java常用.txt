@@ -1,0 +1,39 @@
+数据转换：对象的方法，类的构造函数，工具类
+
+
+1.随机数
+
+1)Math.random  [0,1)
+
+2) Random random = new Random(); random.nextInt(100) 
+
+
+2.ClassLoader的获取和使用,及获取文件路径
+
+	//在web项目中使用ServletContext.getRealPath("/")得到应用程序的根目录
+	//java.io包中的类总是根据当前用户目录来分析相对路径，new File(xxx),就是在System.getProperty("user.dir")路径下找xxx文件
+	
+	loader = Thread.currentThread().getContextClassLoader();
+	ClassLoader parent = loader.getParent();
+	System.out.println(System.getProperty("user.dir"));
+	URL resource = loader.getResource("beanFactoryTest.xml");//获取的是编译后的classes相对路径
+	InputStream openStream = resource.openStream();
+	System.out.println(resource.getPath());
+	ResourceTest test=new ResourceTest();
+	InputStream inputStream = test.getClass().getResourceAsStream("../../../beanFactoryTest.xml");//getResourceAsStream方法参数获取的是当前类文件的相对路径
+	ClassLoader loader1 = test.getClass().getClassLoader();
+	ClassLoader loader2 = ClassLoader.getSystemClassLoader();
+
+	System.out.println(System.identityHashCode(parent));
+	System.out.println(System.identityHashCode(loader));
+	System.out.println(System.identityHashCode(loader1));
+	System.out.println(System.identityHashCode(loader2));
+	
+
+获取项目路径：
+
+   ServletContext context=request.getSession().getServletContext();
+   String filePath=context.getRealPath("/")+"jkzkstat/翻听率统计.xls";
+   String filePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/jkzkstat/翻听率统计.xls"; //全路径
+
+

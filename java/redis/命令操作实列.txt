@@ -1,0 +1,39 @@
+12.15.5.175
+1.找到redis安装目录
+可以先找locate redis-cli,redis-cli在安装目录的src下
+
+2.连接
+使用redis客户端登陆：./redis-cli
+
+3.连接成功后，没有权限
+使用（auth 密码）获取权限
+
+4.常用命令
+  1.exists zkResurce
+  2.keys * ,keys zk*             查找所有符合模式的key
+  3.del key
+  4.expire key timestamp         设置过期时间
+  5.ttl key                      返回key的剩余生存时间
+  6.persist key                  移除key的过期时间
+  7.randomkey                    从当前数据库中随机返回一个key
+  8.rename key newkey
+  9.type key                     返回key所存储值的类型
+  
+  hash操作：
+  1.hset person age 23  给键为person的age字段赋值为23
+  2.hkeys person        获取所有键
+  3.hlen person
+  4.hmget person age name  获取age字段和name字段的值
+  5.hvals person           获取所有键值
+  6.hscan key 0            迭代键值对，0表示迭代的游标，0为重新开始
+  
+  zset操作：
+  
+  
+5.使用jedis有密码连接redis
+	JedisShardInfo info=new JedisShardInfo("12.15.5.175",6379);
+	info.setPassword("btf");
+	Jedis jedis=new Jedis(info);
+	Set<String> keys = jedis.keys("zk*");
+	String s = jedis.get(new ArrayList<String>(keys).get(0));
+	System.out.println(s);

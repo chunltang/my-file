@@ -1,0 +1,438 @@
+***********************************************************************************************************
+-----------------------------------------------------------------------------------------------------------
+***********************************************************************************************************
+1.引入
+
+注册中心eureka：
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+
+eureka参数优化：
+而 eureka，必须优化参数
+## Eureka  两个缓存之间的同更新时间 配置成 3s
+eureka.server.responseCacheUpdateIntervalMs = 3000
+## Eureka client 去 Eureka 中拉取服务注册表的时间 配置 3 秒
+eureka.client.registryFetchIntervalSeconds = 30000
+## 心跳上报时间 默认 30s ，调整为 3s 
+eureka.client.leaseRenewalIntervalInSeconds = 30
+## 线程多少时间检查一次心跳 默认 60s ,可以配置为 6000,6秒中
+eureka.server.evictionIntervalTimerInMs = 60000
+## 服务发现的时效性，默认90 秒钟才下线。可以调整为 9s
+eureka.instance.leaseExpirationDurationInSeconds = 90
+
+--------------------------------------------------------------------------
+
+配置中心服务端：
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-config-server</artifactId>
+</dependency>
+
+配置中心客户端：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-config</artifactId>
+</dependency>
+
+客户端对bus的支持
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-bus-amqp</artifactId>
+</dependency>
+
+		
+--------------------------------------------------------------------------		
+服务提供服务端：
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+
+服务消费客户端：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-feign</artifactId>
+    <version>1.4.7.RELEASE</version>
+</dependency>
+
+--------------------------------------------------------------------------
+网关：
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+</dependency>
+
+
+***********************************************************************************************************
+
+
+2.注解
+
+注册中心：
+@EnableEurekaServer
+
+--------------------------------------------------------------------------
+
+配置中心服务端：
+@EnableConfigServer
+
+配置中心服务端：
+没有特殊注解
+
+--------------------------------------------------------------------------
+
+服务提供服务端：
+@EnableDiscoveryClient
+
+
+服务消费客户端：
+@EnableDiscoveryClient
+@EnableFeignClients
+
+--------------------------------------------------------------------------
+
+网关：
+@EnableZuulProxy
+
+
+***********************************************************************************************************
+
+
+3.配置
+
+注册中心：
+spring.application.name=spring-cloud-eureka
+server.port=8000
+eureka.client.register-with-eureka=false
+eureka.client.fetch-registry=false
+eureka.client.serviceUrl.defaultZone=http://localhost:${server.port}/eureka/
+
+--------------------------------------------------------------------------
+
+配置中心服务端：
+server:
+  port: 8001
+spring:
+  application:
+    name: spring-cloud-config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/chunltang/config          # 配置git仓库的地址
+          search-paths: test                              # git仓库地址下的相对地址，可以配置多个，用,分割。
+          username: 1471728876@qq.com                            # git仓库的账号
+          password: cltang410523                                 # git仓库的密码
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: "*"
+
+#访问路径：http://localhost:8001/test/test.properties
+
+配置中心消费端：
+spring.application.name=spring-cloud-config-client
+server.port=8002
+management.endpoints.web.exposure.include=refresh
+#使用curl -v -X POST "http://localhost:8002/actuator/refresh" 刷新
+
+配置中心和配置消费端直连，bootstrap.properties的配置:
+spring.cloud.config.name=test
+spring.cloud.config.profile=
+spring.cloud.config.uri=http://localhost:8001/
+spring.cloud.config.label=master
+
+配置中心和配置消费端通过注册中心，bootstrap.properties的配置:
+spring.cloud.config.name=neo-config
+spring.cloud.config.profile=dev
+spring.cloud.config.label=master
+spring.cloud.config.discovery.enabled=true
+spring.cloud.config.discovery.serviceId=spring-cloud-config-server
+eureka.client.serviceUrl.defaultZone=http://localhost:8000/eureka/
+--------------------------------------------------------------------------
+
+服务提供服务端：
+spring.application.name=spring-cloud-producer
+server.port=9000
+eureka.client.serviceUrl.defaultZone=http://localhost:8000/eureka/
+
+
+服务消费客户端：
+spring.application.name=spring-cloud-consumer
+server.port=9001
+eureka.client.serviceUrl.defaultZone=http://localhost:8000/eureka/
+feign.hystrix.enabled=true #开启熔断器
+
+--------------------------------------------------------------------------
+
+#这里的配置表示，访问/it/** 直接重定向到http://www.ityouknow.com/**
+zuul.routes.baidu.path=/it/**
+zuul.routes.baidu.url=http://www.ityouknow.com/
+
+转到已注册到eureka中的服务：
+zuul.routes.producer.path=/producer/**
+zuul.routes.producer.serviceId=spring-cloud-producer
+
+
+
+***********************************************************************************************************
+
+
+4.实列代码
+
+消费服务：
+@FeignClient(name="spring-cloud-producer",fallback = HelloRemoteHystrix.class)
+public interface HelloRemote {
+    @RequestMapping("/hello")
+    public String hello(@RequestParam(value="name") String name);
+}
+
+@Component
+public class HelloRemoteHystrix implements HelloRemote {
+    @Override
+    public String hello(@RequestParam(value = "name") String name) {
+        return "hello" +name+", this messge send failed ";
+    }
+}
+
+@RestController
+public class HelloController {
+
+    @Autowired
+    HelloRemote helloRemote;
+    @RequestMapping("/hello/{name}")
+    public String sayHello(@PathVariable("name") String name){
+        return helloRemote.hello(name);
+    }
+}
+
+----------------------------------------------------------------------------
+
+客服端通知注册中心下线：
+DiscoveryManager.getInstance().shutdownComponent();
+
+@Controller
+public class ExitApp implements ServletContextListener {
+
+    @Override
+    public  void contextDestroyed(ServletContextEvent sce) {
+        DiscoveryManager.getInstance().shutdownComponent();
+        System.out.println("exit ！！！");
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent sce){
+        System.out.println("init ！！！");
+    }
+}
+
+***********************************************************************************************************
+
+zuul网关
+
+
+启动类注解：
+@EnableZuulProxy
+
+pol.xml:
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+</dependency>
+
+
+zuul自定义filter：
+
+public class TokenFilter extends ZuulFilter {
+
+    private final Logger logger = LoggerFactory.getLogger(TokenFilter.class);
+
+    @Override
+    public String filterType() {
+        return "pre"; // 可以在请求被路由之前调用
+    }
+
+    @Override
+    public int filterOrder() {
+        return 0; // filter执行顺序，通过数字指定 ,优先级为0，数字越大，优先级越低
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        return true;// 是否执行该过滤器，此处为true，说明需要过滤
+    }
+
+    @Override
+    public Object run() {
+        RequestContext ctx = RequestContext.getCurrentContext();
+        HttpServletRequest request = ctx.getRequest();
+
+        logger.info("--->>> TokenFilter {},{}", request.getMethod(), request.getRequestURL().toString());
+
+        String token = request.getParameter("token");// 获取请求的参数
+
+        if (StringUtils.isNotBlank(token)) {
+            ctx.setSendZuulResponse(true); //对请求进行路由
+            ctx.setResponseStatusCode(200);
+            ctx.set("isSuccess", true);
+            return null;
+        } else {
+            ctx.setSendZuulResponse(false); //不对其进行路由
+            ctx.setResponseStatusCode(400);
+            ctx.setResponseBody("token is empty");
+            ctx.set("isSuccess", false);
+            return null;
+        }
+    }
+
+}
+
+启动类加：
+
+@Bean
+public TokenFilter tokenFilter() {
+	return new TokenFilter();
+}
+
+----------------------------------------------------------------------------
+
+zuul路由熔断：
+
+@Component
+public class ProducerFallback implements FallbackProvider {
+    private final Logger logger = LoggerFactory.getLogger(FallbackProvider.class);
+
+    //指定要处理的 service。
+    @Override
+    public String getRoute() {
+        return "spring-cloud-producer";
+    }
+
+    public ClientHttpResponse fallbackResponse() {
+        return new ClientHttpResponse() {
+            @Override
+            public HttpStatus getStatusCode() throws IOException {
+                return HttpStatus.OK;
+            }
+
+            @Override
+            public int getRawStatusCode() throws IOException {
+                return 200;
+            }
+
+            @Override
+            public String getStatusText() throws IOException {
+                return "OK";
+            }
+
+            @Override
+            public void close() {
+
+            }
+
+            @Override
+            public InputStream getBody() throws IOException {
+                return new ByteArrayInputStream("The service is unavailable.".getBytes());
+            }
+
+            @Override
+            public HttpHeaders getHeaders() {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                return headers;
+            }
+        };
+    }
+
+    @Override
+    public ClientHttpResponse fallbackResponse(String route, Throwable cause) {
+        if (cause != null && cause.getCause() != null) {
+            String reason = cause.getCause().getMessage();
+            logger.info("Excption {}",reason);
+        }
+        return fallbackResponse();
+    }
+}
+
+----------------------------------------------------------------------------
+
+zuul路由重试：
+
+<dependency>
+	<groupId>org.springframework.retry</groupId>
+	<artifactId>spring-retry</artifactId>
+</dependency>
+
+开启Zuul Retry：
+#是否开启重试功能
+zuul.retryable=true
+#对当前服务的重试次数
+ribbon.MaxAutoRetries=2
+#切换相同Server的次数
+ribbon.MaxAutoRetriesNextServer=0
+
+***********************************************************************************************************
+
+Sleuth和Zipkin进行分布式链路跟踪
+
+介绍：
+Spring Cloud Sleuth为服务之间调用提供链路追踪。通过Sleuth可以很清楚的了解到一个服务请求经过了哪些服务，每个服务处理花费了多长。从而让我们可以很方便的理清各微服务间的调用关系。
+此外Sleuth可以帮助我们：
+耗时分析: 通过Sleuth可以很方便的了解到每个采样请求的耗时，从而分析出哪些服务调用比较耗时;
+可视化错误: 对于程序未捕捉的异常，可以通过集成Zipkin服务界面上看到;
+链路优化: 对于调用比较频繁的服务，可以针对这些服务实施一些优化措施。
+spring cloud sleuth可以结合zipkin，将信息发送到zipkin，利用zipkin的存储来存储信息，利用zipkin ui来展示数据。
+
+Zipkin 是一个开放源代码分布式的跟踪系统，由Twitter公司开源，它致力于收集服务的定时数据，以解决微服务架构中的延迟问题，包括数据的收集、存储、查找和展现。
+每个服务向zipkin报告计时数据，zipkin会根据调用关系通过Zipkin UI生成依赖关系图，显示了多少跟踪请求通过每个服务，该系统让开发者可通过一个 Web 前端轻松的收集和分析数据，
+例如用户每次请求服务的处理时间等，可方便的监测系统中存在的瓶颈。
+Zipkin提供了可插拔数据存储方式：In-Memory、MySql、Cassandra以及Elasticsearch。接下来的测试为方便直接采用In-Memory方式进行存储，生产推荐Elasticsearch。
+
+
+引入：
+
+<dependency>
+    <groupId>io.zipkin.java</groupId>
+    <artifactId>zipkin-server</artifactId>
+    <version>2.12.9</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+
+<dependency>
+    <groupId>io.zipkin.java</groupId>
+    <artifactId>zipkin-autoconfigure-ui</artifactId>
+    <version>2.12.9</version>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+
+springboot2.x之后不提供
+curl -sSL https://zipkin.io/quickstart.sh | bash -s
+java -jar zipkin.jar

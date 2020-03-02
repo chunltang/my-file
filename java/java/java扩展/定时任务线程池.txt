@@ -1,0 +1,24 @@
+ 获取服务器IP地址：
+ 
+ InetAddress address = null;
+        try {
+            address = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        String hostAddress = address.getHostAddress();
+        if(!hostAddress.contains("173")){
+             return;
+        }
+
+Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                SysRuleState.sysRuleState();
+            }
+        };
+
+//在前一个任务完成后并超过了2分钟，才执行下一个任务		
+public static ScheduledExecutorService executorServicePool= Executors.newScheduledThreadPool(2);
+		
+com.jkzkmanage.common.ConstParams.executorServicePool.scheduleAtFixedRate(task, 0, 2, TimeUnit.MINUTES);

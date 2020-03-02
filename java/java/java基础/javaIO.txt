@@ -1,0 +1,89 @@
+javaIO主要在java.io包下，分为四大块近80个类：
+
+基于字节操作的I/O接口 ：inputstream和outputstream
+
+基于字符操作的I/O接口 ：writer和reader
+
+基于磁盘操作的I/O接口 ：file
+
+基于网路操作的I/O接口 ：socket（不在java.io包下）
+
+
+影响IO性能的主要因素：数据的格式及存储方式，前两类树妖是数据格式，后两类是存储方面的
+
+inputstream输入流:
+
+	StringBufferInputstream
+
+	sequenceinputstream   将多个流对象转成一个inputstream
+
+	pipedinputstream  管道流
+
+	objectinputstream
+
+	pushbackinputstream
+
+	linenumberinputstream
+
+	datainputstream
+
+	bufferedinputstream
+
+	filerinputstream  装饰器类，为其他inputstram类提供功能
+
+	bytearrayinputstream
+
+	inputstreamreader  字节到字符的转换
+
+ 
+
+
+基于字符的操作：
+
+	bufferedreader,chararrayreader,filterreader,linenumberreader,pushbackreader,inputstreammreader,filereader,pipedreader,StringReader( 将字符串转为输入流)
+
+read(),read(byte b[]),read(byte b[],int off,int len)
+
+可以读取的数据类型：字节数组，string对象，文件，管道（从一端进入，从一端输出），流，internet资源
+
+outputstream输出流:
+
+	bytearrayoutputstream
+
+	fileinputstream
+
+	filteroutputstream
+
+	objectinputstream
+
+	pipedoutputstream
+
+	bufferedoutputstream
+
+	dataoutputstream
+
+	printstream
+
+
+基于字符的操作：
+
+   bufferedwriter,chararraywriter,filterwriter,outputstramwriter,filewriter,pipedwriter,printwriter,stringwriter
+
+
+设计writer和reader的目的是国际化，使IO操作支持16位的Unicode
+
+
+randomaccessfile类：独立与IO类，实现类dataoutput和datainput接口，所有方法都是重新编写的，而且很多方法都是native方法
+
+system.in,system.out,scanner(java.utils)
+
+
+
+NIO和IO的比较：
+
+IO面向流，是阻塞IO
+
+NIO是面向缓冲的，非阻塞IO，有选择器(selector)和通道(channel)
+
+
+

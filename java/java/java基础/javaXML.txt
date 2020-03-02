@@ -1,0 +1,233 @@
+java的XML打包与解析：
+
+xml大小写敏感，区分大小写，是一种树结构
+
+DOM技术：将整个XML作为类似树结构的方式读入内存中以便操作和解析，因此支持应用程序对XML数据的内容和结构进行修改，不适合大数据的XML文件
+
+适用范围：小型XML文件解析，需要全解析或者大部分解析，需要修改XML树内容以生成自己的对象模型
+
+
+
+SAX技术：类似于流解析的技术，通读整个XML文档树，通过事件处理器来响应程序员对于XML数据解析的需求，Sax解析是从头到尾逐个元素读取内容,不能回退,修改不方便，适用只读大文档
+
+         读取元素的开头、结尾都会触发回调方法，可以在这些方法中进行相应事件处理
+		 
+		 startDocument,endDocument,startElement,endElement,characters()方法用来仔细处理元素内包含的内容
+		 
+		 事件驱动解析方法：一般从Main方法中读取文档，却在触发器中处理文档
+		 
+	     在触发器中，首先开始读取文档，然后逐个解析元素，每个元素中的内容会返回到characters()方法，接着结束元素的读取，所有元素读取完后，结束文档解析
+		 
+		 我们要创建触发器这个类，需要继承DefaultHandler
+
+适用范围：大型XML文件解析，只需要部分解析或者只想取得部分XML数内容，有XPath查询需求，有自己生成特定XML树对象模型的需求
+
+
+DOM实列：
+
+	使用DOC将xml和字符串相互转换：
+
+	public class ParseXmlTest {
+
+		public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException, TransformerException {
+			String xmlStr="<book><name dd='aa'>小说</name><price>300</price></book>";
+			//1、使用原始的javax.xml.parers,标准的JKD api,字符串转xml
+			StringReader sr=new StringReader(xmlStr);
+			InputSource is=new InputSource(sr);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc1 = builder.parse(is);
+			Element rootElement = doc1.getDocumentElement();
+			System.out.println(rootElement.getTagName());
+			NodeList childNodes = rootElement.getChildNodes();
+			System.out.println(childNodes.getLength());
+			for (int i = 0; i < childNodes.getLength(); i++) {
+				Node item = childNodes.item(i);
+				String nodeName = item.getNodeName();
+				String content = item.getTextContent();
+				String nodeValue = item.getNodeValue();
+				item.setTextContent("名著");
+				NamedNodeMap attributes = item.getAttributes();
+				for (int i1 = 0; i1 < attributes.getLength(); i1++) {
+					Node node = attributes.item(i1);
+					System.out.println(node.getNodeName());
+				}
+				System.out.println(nodeName+":"+nodeValue);
+				if(item.hasChildNodes()){
+					System.out.println("has child!");
+					NodeList nodes = item.getChildNodes();
+				}
+			}
+			//2、xml转字符串
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty("encoding","UTF-8");
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			transformer.transform(new DOMSource(doc1), new StreamResult(bos));
+			String str=bos.toString();
+			System.out.println(str);
+		}
+	}
+
+SAX实列：
+
+	public class SAXTest {
+
+		class BookHandler extends DefaultHandler{
+
+			private List<String> nameList=new ArrayList<>();
+
+			public List<String> getNameList() {
+				return nameList;
+			}
+
+			public void setNameList(List<String> nameList) {
+				this.nameList = nameList;
+			}
+
+			@Override
+			public void startDocument() throws SAXException {
+				System.out.println("开始解析文档");
+				String s="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+				System.out.println(s);
+				super.startDocument();
+			}
+			@Override
+			public void endDocument()throws SAXException{
+				System.out.println("\n结束文档解析");
+				super.endDocument();
+			}
+
+			@Override
+			public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException{
+				//System.out.println("开始解析元素"+qName);
+				nameList.add(qName);
+				System.out.print("<");
+				System.out.print(qName);
+				if(null!=attrs){
+					for (int i = 0; i < attrs.getLength(); i++) {
+						System.out.print(" "+attrs.getQName(i)+"=\""+attrs.getValue(i)+"\"");
+					}
+					System.out.print(">");
+					super.startElement(uri,localName,qName,attrs);
+				}
+			}
+
+			@Override
+			public void endElement(String namespaceURI,String localName,String qName) throws SAXException{
+				//namespaceURI是名称空间，localName是包含名称空间的标签，如果没有名称空间，则为空，qName是不包含名称空间的标签
+				//System.out.println("结束解析元素"+qName);
+				System.out.print("</");
+				System.out.print(qName);
+				System.out.print(">");
+				super.endElement(namespaceURI,localName,qName);
+			}
+
+			@Override
+			public void characters(char ch[], int start, int length) throws SAXException {//ch是传回来的字符数组，包含元素内容，
+				String s = new String(ch, start, length);
+				System.out.print(s);
+				super.characters(ch,start,length);
+			}
+		}
+
+		public static void main(String[] args) throws SAXException, IOException, ParserConfigurationException {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser parser = factory.newSAXParser();
+			File file = new File("person.xml");
+			SAXTest saxTest = new SAXTest();
+			BookHandler handler = saxTest.new BookHandler();
+			parser.parse(file,handler);
+			List<String> nameList = handler.getNameList();
+			System.out.println(nameList);
+		}
+	}
+
+
+XML打包：
+
+public class SAXGeneratorXml {
+
+    public static void main(String[] args) throws FileNotFoundException, TransformerException, ParserConfigurationException {
+        String outputPath="person.xml";
+        geneateXml(outputPath);
+    }
+
+    public static void geneateXml(String outputPath) throws ParserConfigurationException, TransformerException, FileNotFoundException {
+        Person[] arr = new Person[]{new Person("小玲","22"),new Person("小白","18")};
+        List<Person> list = Arrays.asList(arr);
+        Document document = generateXml(list);
+        outputXml(document,outputPath);
+    }
+
+
+    /**将制定XML文件输出到制定的路径*/
+    private static void outputXml(Document doc,String fileName) throws TransformerException, FileNotFoundException {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        DOMSource source = new DOMSource(doc);
+        transformer.setOutputProperty(OutputKeys.ENCODING,"UTF-8");
+        transformer.setOutputProperty(OutputKeys.INDENT,"yes");
+        PrintWriter printWriter = new PrintWriter(new FileOutputStream(fileName));
+        StreamResult result = new StreamResult(printWriter);
+        transformer.transform(source,result);
+        System.out.println("生成XML文件成功");
+    }
+
+    /**生成XML*/
+    public static Document generateXml(List<Person> list) throws ParserConfigurationException {
+        Document doc=null;
+        Element root=null;
+        try{
+            DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            doc= builder.newDocument();
+            root=doc.createElement("person");
+            doc.appendChild(root);
+            int len=list.size();
+            Element element;
+            for (int i = 0; i < len; i++) {
+                Person person = list.get(i);
+                element = doc.createElement("person" + (i + 1));
+                element.setAttribute("name",person.getName());
+                element.setAttribute("age",person.getAge());
+                root.appendChild(element);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return doc;
+    }
+}
+
+    //更新配置文件
+    public boolean updateZkStrategy(String zkStrategy) {
+        boolean flag = true;
+        //1.拿到代表xml文档的document
+        Document doc = ConstParams.local_document;
+
+        //2.获取到指定的element
+        Element ele = doc.getRootElement().element("ZK_STRATEGY");
+        //3.设置侦控策略值
+        ele.setText(zkStrategy);
+        //4.tcl 更新文档，重新加载xml
+        try {
+            String path = JKManageImplService.class.getClassLoader().getResource(ConstParams.LOCAL_XML).getPath();
+            FileOutputStream out = new FileOutputStream(path);
+            OutputFormat format = OutputFormat.createPrettyPrint();
+            format.setEncoding("UTF-8");
+            XMLWriter writer = new XMLWriter(out, format);
+            writer.write(doc);
+            writer.close();
+        } catch (Exception e) {
+            ArgoLog.error("写入jkzkmanage_local文件失败", e, ConstParams.LOGGER);
+            flag = false;
+        }
+
+        ArgoLog.debug("更新侦控策略文档结果：" + flag, ConstParams.LOGGER);
+        if (flag) {
+            ConstParams.ZK_STRATEGY = zkStrategy;
+        }
+        return flag;
+    }
+

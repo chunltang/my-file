@@ -1,0 +1,300 @@
+java 反射  (https://www.cnblogs.com/zyly/p/10727511.html)
+
+当我们new一个对象时，JVM会找到我们的*.class文件，并加载到JVM内存中，同时产生一个Class对象(一个类只会产生一个Class对象)
+
+反射的本质就是得到Class对象后，反向获取类的各种信息，一个类的成员方法、构造器都能用一个类来描述
+
+被final修饰的类不能被继承
+
+Class类的实列表示正在运行的Java应用程序中的类和接口，也就是JVM中有N多的实列，每个类都有该Class对象(包括基本数据类型)
+
+Class没有公共构造方法，Class对象时在加载类时由Java虚拟机以及通过调用类加载器中的defineClass方法构造的，不需要我们自己去创建，JVM已经处理好了
+
+Class对象可以获取某个类中的：构造方法、成员变量、成员方法，并访问成员
+
+
+1.获取Class对象的三种形式
+
+  a.Obj.getClass()  
+  
+  b.任何数据类型都有一个静态的class属性
+  
+  c.通过Class类的静态方法:Class.forName(className)  常用方式为第三种·
+  
+  
+2.获取构造方法
+
+  a.批量  getConstructors() 所有共有的   getDeclaredConstrctors()  获取所有构造方法(包括私有、受保护、默认、共有)
+  
+  b.获取单个并调用  getConstructor(Class...params)   getDeclaredConstrctor(Class...params)   调用:Constructor.newInstance(object...initargs)   Constructor.setAccessible(true)  暴力访问，忽略访问修饰符
+  
+  
+3.获取成员变量并调用
+
+  a.批量  getFields()   getDeclaredFields()
+  
+  c.单个  getField(String fieldName)   getDeclaredField(String fieldName)  field.set(obj,Object value)  obj为要设置字段所在对象，value为字段设置的值   field.setAccessible(true)
+  
+  
+4.获取成员方法并调用
+
+  a.批量 getMethods()   getDeclaredMethods()
+  
+  b.单个  getMethod(String methodName,Class...parameterTypes)   getDeclaredMethod(String methodName,Class...parameterTypes)   调用:method.invoke(obj,args)  obj为要调用该方法的对象，静态方法的此参数可以为null,无参不传args   method.setAccessible(true)
+  
+ 
+5.反射main方法
+
+ 
+6.通过反射运行配置文件的内容
+
+     public static String getValue(String key,String path)  {  
+        Properties pro=new Properties();
+        FileReader reader = null;
+        try {
+            reader = new FileReader(path);
+            pro.load(reader); //将流加载到配置文件对象中
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return pro.getProperty(key,"");
+    }
+	
+
+7.通过反射越过泛型检查
+
+   泛型用在编译期，编译后泛型擦除
+   
+   
+   列：向一个String类型的集合中添加integer类型的数据
+   
+   public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        ArrayList<String> arrayList = new ArrayList<>();
+        arrayList.add("aaa");
+        arrayList.add("bbb");
+
+        Class<? extends ArrayList> aClass = arrayList.getClass();
+        Method add = aClass.getMethod("add", Object.class);
+        add.invoke(arrayList,100);
+        for (Object s : arrayList) {
+            System.out.println(s);
+        }
+    }
+	
+	
+8.使用反射操作数组
+
+	public static void main(String[] args) {
+			int[] arr = (int[])Array.newInstance(int.class, 10); //使用反射创建数组
+			for (int i = 0; i < arr.length; i++) {//使用反射赋值
+				Array.set(arr,i,i+2);
+			}
+
+			for (int i = 0; i < arr.length; i++) { //使用反射获取值
+				System.out.println(Array.get(arr,i));
+			}
+		}
+		
+		
+9.通过反射获取方法的返回类型对象
+
+   Type type=method.getGenericReturnType()
+   
+   if(type instanceof ParameterType)   判断该type对象能不能转型为ParameterType
+   
+   ParameterType ptype=(ParameterType)type;
+   
+   Type[] types=ptype.getActualTypeArguments();  得到参数化类型的数组
+   
+   for(Type t:types){
+      Calss returnTy=(Class)t;  转化为class对象
+   }
+   
+10.判断类型
+
+  obj.getClass().isPrimitive()                 判断是否为基本数据类型
+  obj.getClass().isAssignableFrom(o2.class)    判断obj是否与o2类型或是o2的父类
+  
+  Type gt=obj.getClass().getGenericType()      得到泛型类型
+  ParameterizedType pt=(ParameterizedType)gt;
+  Class clazz=(Class)pt.getActualTypeArguments()[0]
+  
+  //判断基本类型和包装类型，基本类型没有TYPE字段
+  (Class) Integer.class.getField("TYPE").get(null)).isPrimitive()  true
+  int.class.isPrimitive() true
+  Integer.class.isPrimitive()  false
+  Integer.TYPE 返回基本类型的实列
+  
+  
+************************************************************************************************************************************
+
+反射实列：
+    /**
+     * 按对象属性名称生层次转换json数据
+     * */
+    public static <T> T jsonToBean(String jsonStr, Class target) {
+        if (Map.class.isAssignableFrom(target)) {
+            return (T) JSONObject.parseObject(jsonStr, Map.class);
+        } else if (List.class.isAssignableFrom(target)) {
+            return (T) JSONArray.parseObject(jsonStr, List.class);
+        } else {
+            JSONObject jsonObject = JSONObject.parseObject(jsonStr);
+            Object t = null;
+            try {
+                t = target.newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Field[] fields = target.getDeclaredFields();
+            handleField(fields,t,jsonObject);
+            return (T)t;
+        }
+    }
+
+    /**
+     * 字段设值
+     * */
+    private static void handleField(Field[] fields,Object t,JSONObject jsonObject){
+        for (Field field : fields) {
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())) {
+                continue;
+            }
+            Class<?> type = field.getType();
+            Object value = containKey(jsonObject, field.getName());
+            if (null != value) {
+                field.setAccessible(true);
+                try {
+                    if (value instanceof JSONObject) {//map,obj
+                        field.set(t, JSONObject.parseObject(String.valueOf(value), type));
+                        continue;
+                    }
+                    if (value instanceof JSONArray) {//数组,list
+                        field.set(t, JSONArray.parseObject(String.valueOf(value), type));
+                        continue;
+                    }
+                    if (Date.class.isAssignableFrom(type)) {//date
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Date date = dateFormat.parse(value.toString());
+                        field.set(t, date);
+                        continue;
+                    }
+
+                    if (type.isPrimitive()) { //基础数据类型
+                        if (type.isAssignableFrom(float.class)) {
+                            field.set(t, Float.parseFloat(value.toString()));
+                        }else if (type.isAssignableFrom(int.class)) {
+                            field.set(t, Integer.parseInt(value.toString()));
+                        }else if (type.isAssignableFrom(boolean.class)) {
+                            field.set(t, Boolean.parseBoolean(value.toString()));
+                        }else if (type.isAssignableFrom(long.class)) {
+                            field.set(t, Long.parseLong(value.toString()));
+                        }else if (type.isAssignableFrom(short.class)) {
+                            field.set(t, Short.parseShort(value.toString()));
+                        }else if (type.isAssignableFrom(char.class)) {
+                            field.set(t, value.toString().charAt(0));
+                        }else if (type.isAssignableFrom(double.class)) {
+                            field.set(t, Double.parseDouble(value.toString()));
+                        }else if (type.isAssignableFrom(byte.class)) {
+                            field.set(t, Byte.parseByte(value.toString()));
+                        }
+                        continue;
+                    }
+
+                    if(hasField(type,"TYPE")){//包装类获取基础数据类型
+                        if(Character.class.isAssignableFrom(type)){
+                            Method m = type.getDeclaredMethod("valueOf", Character.class);
+                            Object invoke = m.invoke(null, value.toString().charAt(0));
+                            field.set(t, invoke);
+                        }else{
+                            Method  m = type.getDeclaredMethod("valueOf", String.class);
+                            Object invoke = m.invoke(null, value.toString());
+                            field.set(t, invoke);
+                        }
+                        continue;
+                    }
+
+                    if(type.isEnum()){//枚举类型
+                        Object[] enumConstants = type.getEnumConstants();
+                        Method getValue = type.getMethod("getValue");//需要定义getValue方法
+                        for (Object enumConstant : enumConstants) {
+                            Object invoke = getValue.invoke(enumConstant);
+                            if(null!=invoke&&String.valueOf(invoke).equals(value.toString())){
+                                field.set(t, enumConstant);
+                            }
+                        }
+                        continue;
+                    }
+
+                    if(String.class.isAssignableFrom(type)){
+                        field.set(t, String.valueOf(value));
+                        continue;
+                    }
+                } catch (Exception e) {
+                    log.error("反射异常",e);
+                    continue;
+                }
+            }else{//转换对象中的自定义对象属性
+                /*if(excludeType(field)){
+                    continue;
+                }*/
+                Field[] declaredFields = type.getDeclaredFields();
+                try {
+                    Object o = type.newInstance();
+                    field.setAccessible(true);
+                    field.set(t,o);
+                    handleField(declaredFields,o,jsonObject);
+                }catch (Exception e){
+                    continue;
+                }
+            }
+        }
+    }
+
+    /**
+     * 排除飞自定义类型
+     * */
+    private static boolean excludeType(Field field){
+        Class<?> type = field.getType();
+        if(null==type.getClassLoader()){//核心加载器为空则为自定义类型
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * TYPE,判断是否是包装类，只有包装类才有TYPE字段
+     * */
+    private static boolean hasField(Class clazz,String name){
+        try {
+            clazz.getField(name);
+        }catch (NoSuchFieldException e){
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * 判断json中是否有指定键
+     * */
+    private static Object containKey(JSONObject jsonObject, String containKey) {
+        if (jsonObject.containsKey(containKey)) {
+            return jsonObject.get(containKey);
+        }
+
+        Set<Map.Entry<String, Object>> entries = jsonObject.entrySet();
+        for (Map.Entry<String, Object> entry : entries) {
+            Object value = entry.getValue();
+            if (value instanceof Map || value instanceof JSONObject) {
+                return containKey((JSONObject) value, containKey);
+            }
+        }
+        return null;
+    }
+  
+   
+   
+   
+
+  

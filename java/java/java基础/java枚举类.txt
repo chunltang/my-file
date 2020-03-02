@@ -1,0 +1,19 @@
+public enum JkRmStatusEnum {
+    NOSTATUS(0,"查询"),ONCONTROL(1,"在控"),STOPECONTROL(2,"停控"),REMOVECONTROL(3,"解除"),ONCONTROLING(4,"上控中"),STOPECONTROLING(5,"停控中");
+
+    private Integer status;
+    private String desc;
+    JkRmStatusEnum(Integer status,String desc){
+        this.status=status;
+        this.desc=desc;
+    }
+
+    public Integer getStatus(){
+        return this.status;
+    }
+
+    public static void main(String[] args) {
+        Integer status = JkRmStatusEnum.NOSTATUS.getStatus();
+        System.out.println(status);
+    }
+}

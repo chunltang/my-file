@@ -1,0 +1,666 @@
+java的Nio
+
+javaNIO的核心组成：Channels,Buffers,Selectors
+
+    数据可以从channel读到buffer，页可以从buffer写到channel
+	
+    channel的主要实现：FileChannel(从文件中读写数据,常用于文件复制)，DatagramChannel(能通过UDP读写网路中的数据)，SocketChannel(能通过TCP读写网路中的数据)，ServerSocketChannel(能监听新进来的TCP连接，向web服务器那样，对每一个新进来的连接都会创建一个SocketChannel)
+	
+	     这些通道涵盖了UDP，TCP,网路IO，和文件IO
+	
+	Buffer的主要实现：ByteBuffer，CharBuffer，DoubleBuffer，FloatBuffer，IntBuffer，LongBuffer，ShortBuffer，涵盖了你能通过IO发送的基本数据类型，还有MappedByteBuffer，用于表示内存映射文件
+	
+	Selector：允许单线程处理多个Channel，如果你的应用打开了多个连接(通道)，但每个连接的流量都很低，使用Selector就会很方便，列如在一个聊天服务器中。
+	
+	    Selector的使用：得向Selector注册Channel，然后调用它的select()方法。这个方法会一直阻塞到某个注册的通道有事件就绪，一旦这个方法返回，线程就可以处理这些事件，事件可以是新连接进来，数据接收等
+		
+		
+Channel：
+
+    java的NIO的通道类似流，但又不同，即可以从通道中读取数据，又可以写数据到通道，但流的读写通常是单向的
+	
+	通道可以异步的读写，通道中的数据总是先读到一个Buffer，或者总是要从一个Buffer中写入
+	
+	public class ChannelTest {
+    public static void main(String[] args) throws IOException {
+        RandomAccessFile aFile = new RandomAccessFile("person.xml", "rw");
+        FileChannel channel = aFile.getChannel();//从流中获取通道
+        ByteBuffer buffer = ByteBuffer.allocate(48);//初始化Buffer的大小，position=0，limit=48
+        int read = channel.read(buffer);//读取数据到Buffer，返回数据长度position=47，limit=48
+        while (read != -1) {
+            System.out.println("Read " + read);
+            buffer.flip(); //反转Buffer，先读取数据到Buffer，然后反转后从buffer中获取数据，limit=position，position=0
+
+            while (buffer.hasRemaining()) {//判断Buffer中是否有数据
+                System.out.print((char) buffer.get());
+            }
+            buffer.clear(); //position=0，limit=48
+            read=channel.read(buffer);
+        }
+        aFile.close();
+       }
+    }
+	
+	
+
+Buffer:
+
+    缓冲区本质是一块可以写入数据，然后可以从中读取数据的内存，这块内存被包装成NIO Buffer对象，并提供了一组方法，用来方便的访问该快内存
+	
+    Buffer的基本使用：
+	
+	    1).写入数据到Buffer
+		
+		2).调用flip()方法反转Buffer，从可写到可读
+		
+		3).从Buffer中读取数据
+		
+		4).调用clear()方法或者compact()方法
+		
+		当向buffer写入数据时，buffer会记录写了多少数据，一旦要读取数据，需要通过flip()方法将Buffer从写模式切换到读模式。一旦读完所有数据，就需要清空缓冲区，让它可以在次被写入，调用clear()或compact()两种方式清空缓存区，clear()清空整个缓冲区
+		
+		    compact()方法只会清除已经读过的数据，任何未读的数据都被移到缓冲区的起始处，新写入的数据都将放到缓冲区未读数据的后面
+			
+			
+	Buffer的工作原理：
+	
+	    三个属性：capacity，position，limit
+		
+		position和limit的含义取决于Buffer处在读模式还是写模式，不管Buffer在上面模式，capacity的含义总是一样的
+		
+		capacity是Buffer的一个固定的大小值
+		
+		position：写数据时，position表示当前的位置，初始的position值为0,当插入数据时，position会移动到下一个可插入数据的单元，position的最大值为capacity-1
+		
+		   当读取数据时，也是从某个特定位置读取。当Buffer从写模式切换到读模式，position被重置为0，读取时position向前移动下一个可读位置
+		   
+		limit：在写模式下，表示最多能写多少数据，limit等于capacity，在读模式下，limit表示你最多能读取多少数据，当切换为读模式时，limit被设置成写模式下的position值，换句话说，你能读到之前写入的所有数据
+		
+		
+		使用Buffer需要先分配：ByteBuffer buffer = ByteBuffer.allocate(48); 48字节ByteBuffer   CharBuffer charBuffer = CharBuffer.allocate(1024);1024字符的CharBuffer
+		
+		向Buffer中写入数据：a)重通道写入 int read = channel.read(buffer);  b)通过put()方法写入Buffer，buffer.put(12);
+		
+		flip()方法：将Buffer从写模式切换到读模式，调用flip()会将position设置为0，并将limit设置为之前的position
+		
+		从Buffer中读取数据：a)从Buffer读取数据到Channel channel.write(buffer)  b)使用get()方法从Buffer中读取数据 (char) buffer.get()
+		
+		buffer.rewind()方法：将position设回0，所以你可以重新读Buffer中的所有数据，limit保持不变，任然表示能从Buffer中读取多少个元素
+		 
+		一旦读完Buffer中数据，需要让Buffer准备再次被写入，可以通过clear()或compact()完成   如果调用clear()，position设为0，limit设置成capacity的值，换句话说，Buffer被清空了。Buffer中的数据并未清除，只是这些标记告诉我们可以从哪里开始往Buffer里写数据
+
+            如果Buffer还有未读数据，调用clear()，数据将被遗忘，意味着不在有任何标记会告诉你哪些数据被读过，哪些数据还没有被读过
+           
+            使用compact()将所有未读数据拷贝到Buffer起始处，然后将position设置为走后一个未读元素的最后面，limit同样设置为capacity，现在Buffer准备好写数据了，但是不会覆盖未读数据
+
+        buffer.mark()和buffer.reset() ：可以标记Buffer中的一个特定position，之后可以通过buffer.reset()恢复到这个position	
+
+
+
+
+scatter(分散)和gather(聚集)：
+
+    分散：在读操作时，将读取的数据写入多个buffer中
+	
+	聚集：在写操作时将多个buffer的数据写入同一个Channel
+	
+	常用于需要将传输的数据分开处理的场合，列如传输一个消息头和消息体组成的消息，你可能会将消息体和消息头分散到不同的buffer中
+	
+	read()方法按照buffer在数组中顺序将从channel中读取的数据写入buffer，当一个buffer被写满后，channel紧接着向另一个buffer中写。Scattering Reads 在移动下一个buffer前，必须填满当前的buffer，这也意味着它不适合于动态消息
+	
+	Gathering Writes的write()方法会按照buffer在数组中的顺序，将数据写入channel中，注意只有position和limit之间的数据才会被写入，能较好的处理动态消息
+	
+	
+	
+通道之间的数据传输：
+
+    如果两个通道其中一个是FileChannel，那么可以直接将数据从一个channel传输到另外一个channel，FileChannel的transferFrom()可以将数据从源通道传输到FileChannel中,transferTo()将数据从FileChannel传输到其他的channel中
+	
+	
+
+Selector：
+
+    Selector(选择器)是java NIO中能够检测一到多个NIO通道，并能够知晓通道是否为诸如读写事件做好准备的组件，这样，一个单独的线程可以管理多个channel，从而管理多个网路连接
+	
+	事实上，可以只用一个线程来处理所有的通道，对于操作系统来说，线程之间的上下文切换都要占用系统的一些资源
+	
+	与Selector一起使用时，Channel必须处于非阻塞模式下，这意味着不能将FileChannel与Selector一起使用，因为FileChannel不能切换到非阻塞模式，而套接字通道可以
+	
+	    Selector selector = Selector.open(); //创建Selector
+        SocketChannel socketChannel = SocketChannel.open();
+        socketChannel.configureBlocking(false);//设置channel为非阻塞
+        socketChannel.register(selector, SelectionKey.OP_READ); //设置Selector监听该channel的可读事件
+		
+	可以监听四种类型：connect，accept，read，write   通道触发一个事件就是该事件已经就绪
+	
+	
+	SelectionKey对象的属性： interest集合(事件集合) selectionKey.interestOps(),ready集合(是通道已经准备就绪的操作集合)  selectionKey.readyOps()  selectionKey.isAcceptable()，Channel,Selector
+	
+	从SelectionKey访问Channel和Selector :
+	
+	    SelectableChannel channel = selectionKey.channel();  Selector selector = selectionKey.selector();
+		
+	SelectionKey的附加对象：可以将一个对象或者更多信息附着到SelectionKey上，这样能方便的识别某个给定的通道，列如可以附加与通道一起使用的Buffer   selectionKey.attach(buffer);  或者在注册时附加对象  socketChannel.register(selector, SelectionKey.OP_READ,obj);
+	
+	
+	select()方法返回读事件已经就绪的那些通道，返回为个数
+	
+	通过select()中的有多少通道就绪了，通过selector.selectedKeys() 获取就绪通道的键集，就是channel.register() 注册时返回的selectionKey对象  也可以通过SelectionKey.selectedKeySet() 访问这些对象
+	
+	***同一个通道可以同时注册到多个选择器上，但同一个通道在同一个选择器中只能注册一次
+
+
+	
+实列：
+
+	public class ClientTest {//客户端
+
+		public static void main(String[] args) throws IOException {
+			SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress("127.0.0.1",9898));
+			socketChannel.configureBlocking(false);
+			ByteBuffer buffer = ByteBuffer.allocate(1024);
+			Scanner scanner = new Scanner(System.in);
+			while(scanner.hasNext()){
+				String next = scanner.next();
+				buffer.put((new Date().toString()+"\n"+next).getBytes());
+				buffer.flip();
+				socketChannel.write(buffer);
+				buffer.clear();
+			}
+			socketChannel.close();
+		}
+	}
+	
+	public static void main(String[] args) throws IOException {
+	 SocketChannel socketChannel = null;
+        try {
+            socketChannel = SocketChannel.open(new InetSocketAddress("127.0.0.1", 9898));
+            socketChannel.configureBlocking(false);
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            buffer.put((Thread.currentThread().getName() + new Random().nextInt(100) + "\n").getBytes());
+            buffer.flip();
+            socketChannel.write(buffer);
+            buffer.clear();
+            socketChannel.close();  //正确关闭
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	}
+	
+	public class ServerTest {//服务端
+
+		public static void main(String[] args) throws IOException {
+			ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+			serverSocketChannel.configureBlocking(false);
+			serverSocketChannel.bind(new InetSocketAddress(9898));
+			Selector selector = Selector.open();
+			serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);//注册监听的就绪事件，有事件就绪时，自动加入selectedKeys的集合中，做完操作后要手动移除iterator.remove();
+			while(selector.select()>0){ //返回就绪事件的个数
+				Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+				while(iterator.hasNext()){
+					SelectionKey next = iterator.next();
+					if(next.isAcceptable()){
+						SocketChannel accept = serverSocketChannel.accept();
+						accept.configureBlocking(false);
+						accept.register(selector,SelectionKey.OP_READ);//注册下一个需要监听的就绪事件
+						System.out.println("接收就绪!");
+					}else if(next.isReadable()){
+						SocketChannel channel = (SocketChannel) next.channel();
+						ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+						System.out.println("开始读取数据");
+						int len=0;
+						while((len=channel.read(byteBuffer))>0){
+							System.out.println(new String(byteBuffer.array()));
+							byteBuffer.clear();
+						}
+						
+						if(len==-1){ //正确关闭
+                           System.out.println("断开!");
+                           channel.close();
+                       }
+					}
+					iterator.remove();//如果不移除，之前处理过的就绪事件会一直存在
+				}	
+			}
+		}
+	}
+	
+	
+	public class ServerTest {  //不断监听接收客服端的请求
+
+    public static void main(String[] args) throws IOException {
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.bind(new InetSocketAddress(9898));
+		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+        Selector selector = Selector.open();
+        while(true){
+            while(selector.select()>0){
+                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                while(iterator.hasNext()){
+                    SelectionKey next = iterator.next();
+                    if(next.isAcceptable()){
+                        SocketChannel accept = serverSocketChannel.accept();
+                        if(null==accept){
+                            continue;
+                        }
+                        accept.configureBlocking(false);
+                        accept.register(selector,SelectionKey.OP_READ);
+                        System.out.println("接收就绪!");
+                    }else if(next.isReadable()){
+                        SocketChannel channel = (SocketChannel) next.channel();
+                        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+                        System.out.println("开始读取数据");
+                        int len=0;
+                        while((len=channel.read(byteBuffer))>0){
+                            System.out.println(new String(byteBuffer.array()));
+                            byteBuffer.clear();
+                        }
+                        if(len==-1){
+                            System.out.println("断开!");
+                            channel.close();
+                        }
+                    }
+					iterator.remove();
+                }            
+            }
+        }
+      }
+   }
+   
+   
+   
+ 完整实列：
+ 
+	 public class ClientTest {
+
+		public static void main(String[] args) throws IOException {
+			int step=10;
+			SocketChannel socketChannel = SocketChannel.open();
+			socketChannel.configureBlocking(false);
+			socketChannel.connect(new InetSocketAddress("localhost",9898));
+			Selector selector = Selector.open();
+			socketChannel.register(selector,SelectionKey.OP_CONNECT);
+			boolean isOver=false;
+
+			while (!isOver){
+				selector.select();
+				Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+				while (iterator.hasNext()){
+					SelectionKey key = iterator.next();
+					iterator.remove();
+
+					if(key.isConnectable()){
+						if(socketChannel.isConnectionPending()){
+							if(socketChannel.finishConnect()){  //连接成功后才能监听读事件
+								key.interestOps(SelectionKey.OP_READ);
+							}else{
+								key.cancel();
+							}
+						}
+					}else if(key.isReadable()){
+						ByteBuffer buffer = ByteBuffer.allocate(1024);
+						int len;
+						while ((len= socketChannel.read(buffer))>0){   //如果需要正常终止socket连接，需要一方调用socket.close() 主动关闭 或者调用  socketChannel.shutdownOutput(); socketChannel.shutdownInput();
+							System.out.println(new String(buffer.array()));
+							buffer.clear();
+						}
+
+						if(len==-1){
+							socketChannel.close();
+						}
+						System.out.println(len);
+						buffer.put("客服端发送过来的数据:your are dog!".getBytes());
+						buffer.flip();
+						while (buffer.hasRemaining()){
+							socketChannel.write(buffer);
+						}
+
+						selector.close();
+						socketChannel.close();
+						isOver=true;
+
+					  /*  step--;
+						if(step<0){
+							selector.close();
+							socketChannel.close();
+							isOver=true;
+						}*/
+					}
+
+				}
+			}
+		   /* selector.close();
+			socketChannel.close();*/
+		}
+	}
+	
+	
+	
+	public class ServerTest {
+
+    private static  ByteBuffer buffer= ByteBuffer.allocate(1024);
+
+    public static void main(String[] args) throws IOException {
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.bind(new InetSocketAddress(9898));
+        Selector selector = Selector.open();
+        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+        while (true) {
+            int i = selector.select();
+            if (i == 0) {
+                continue;
+            }
+            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+            while (iterator.hasNext()) {
+                SelectionKey key = iterator.next();
+                if (key.isAcceptable()) {
+                    ServerSocketChannel server =(ServerSocketChannel) key.channel();
+                    SocketChannel channel = server.accept();
+                    registerChannel(selector,channel,SelectionKey.OP_READ);
+                    sayHello(channel);
+                } else if (key.isReadable()) {
+                    readDataFromSocket(key);
+                }
+                iterator.remove();
+            }
+        }
+    }
+
+	protected static void registerChannel(Selector selector,SelectableChannel channel,int ops) throws IOException {
+			if(null==channel){
+				return;
+			}
+			channel.configureBlocking(false);
+			channel.register(selector,ops);
+		}
+
+	private static void sayHello(SocketChannel channel) throws IOException {
+			buffer.clear();
+			buffer.put("Hi there!\r\n".getBytes());
+			buffer.flip();
+			channel.write(buffer);
+		}
+
+	protected static void readDataFromSocket(SelectionKey key) throws IOException {
+			SocketChannel channel =(SocketChannel) key.channel();
+			int count=0;
+			buffer.clear();
+			while((count=channel.read(buffer))>0){
+				buffer.flip();
+				while(buffer.hasRemaining()){
+					channel.write(buffer);
+				}
+				System.out.println(new String(buffer.array()));
+				buffer.clear();
+			}
+			if(count<0){  //如果没有这行，就算客户端关闭，还是一直会收到读事件，只是返回长度为-1，表示已读完
+				System.out.println("断开连接!");
+				channel.close();
+			}
+		}
+	}
+	
+	每个事件在么个选择器上只要注册一次，就一直会有这个监听事件，有被监听的事件就绪时会把这个channel的key放入SelectionKeys的集合中，使用完这个键后，使用iterator.remove();移除这个集合，下次有这个通道的事件时，又会加入该集合
+
+	
+	
+实现多人聊天室：
+
+ public class ChatRoomServer {  //服务端
+
+    private Selector selector;
+
+    private final static int PORT=9900;
+
+    private static final String EXIT="exit";
+
+    //统计在线人数或人名
+    private Set<String> online=new HashSet<>();
+
+    //编码
+    private Charset charset=Charset.forName("UTF-8");
+
+    //用户存在提示信息
+    private static String USER_EXIST="system user exist,please change a name";
+
+    //自定义协议格式，与客户端协商好
+    private static String USER_CONTENT_SPILIT="#@#";
+
+    public static void main(String[] args) {
+        try{
+            new ChatRoomServer().init();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    //初始化服务器
+    public void init() throws IOException {
+        this.selector=Selector.open();
+        ServerSocketChannel server = ServerSocketChannel.open();
+        ServerSocket serverSocket = server.socket();
+        InetSocketAddress address = new InetSocketAddress(PORT);
+        serverSocket.bind(address);
+
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
+
+        System.out.println("server is linstening...");
+
+        while (true){
+            int nums=this.selector.select();
+            if(nums<=0){
+                continue;
+            }
+
+            Iterator<SelectionKey> iterator = this.selector.selectedKeys().iterator();
+            while (iterator.hasNext()){
+                SelectionKey key = iterator.next();
+                iterator.remove();
+                this.dealWithSelectionKey(server,key);
+            }
+        }
+    }
+
+    private void dealWithSelectionKey(ServerSocketChannel server,SelectionKey key) throws IOException {
+        if(key.isAcceptable()){
+            SocketChannel schannel = server.accept();
+            schannel.configureBlocking(false);
+            schannel.register(this.selector,SelectionKey.OP_READ);
+            //key.interestOps(SelectionKey.OP_ACCEPT);
+
+            System.out.println("server is listening from client:"+schannel.socket().getRemoteSocketAddress());
+            schannel.write(charset.encode("please input your name:"));
+        }else if(key.isReadable()){//处理来自客户端的数据
+            SocketChannel sc =(SocketChannel) key.channel();
+            StringBuffer content = new StringBuffer();
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            int len=0;
+            try{
+                while ((len=sc.read(buffer))>0){
+                    buffer.flip();
+                    content.append(charset.decode((buffer)));
+                }
+                //将此对应的channel设置为准备下一次接收数据
+                //key.interestOps(SelectionKey.OP_READ);
+            }catch (Exception e){
+                e.printStackTrace();
+                key.cancel();
+                sc.close();
+            }
+            if(len<0||EXIT.equals(content.toString())){
+                String name = key.attachment().toString();
+                key.cancel();
+                this.broadCast(selector,sc,name+" disconnected from server ,online num is :"+this.onlineTotal(key));
+                online.remove(key.attachment().toString());
+                sc.close();
+                return;
+            }
+            if(content.length()>0){
+                String[] msgArr = content.toString().split(USER_CONTENT_SPILIT); //按拆分规则拆分
+                //注册名字
+                if(null!=msgArr && msgArr.length==1){
+                    //用户存在，则直接返回
+                    if(online.contains(msgArr[0])){
+                        sc.write(charset.encode(USER_EXIST));
+                    }else{
+                        String name=msgArr[0];
+                        key.attach(name);
+                        online.add(name);
+
+                        int onlineNum=this.onlineTotal(null);
+                        String msg="welcome "+name+" to chat room,current online num is :"+onlineNum;
+
+                        //通知所有人
+                        this.broadCast(selector,null,msg);
+                    }
+                }else if(msgArr!=null && msgArr.length>1){//聊天内容
+                    String name=msgArr[0];
+                    String message=content.substring(name.length()+USER_CONTENT_SPILIT.length());
+                    message=name+" sys>>> "+message;
+                    if(online.contains(name)){ //不回发给发送次内容的客户端
+                        this.broadCast(selector,sc,message);
+                    }
+                }
+            }
+        }
+    }
+
+    public void broadCast(Selector selector,SocketChannel except,String msg) throws IOException {
+        for (SelectionKey key : selector.keys()) {
+            Channel channel=key.channel();
+            if(channel instanceof SocketChannel && channel!=except){
+                SocketChannel socketChannel = (SocketChannel) channel;
+                socketChannel.write(charset.encode(msg));
+            }
+        }
+    }
+
+    //获取在线人数
+    private int onlineTotal(SelectionKey exceptKey){
+        int num=0;
+        for (SelectionKey key : this.selector.keys()) {
+            if(key==exceptKey){
+                continue;
+            }
+            Channel channel = key.channel();
+            if(channel instanceof SocketChannel){
+                num++;
+            }
+        }
+        return num;
+    }
+}
+
+
+
+public class ChatRoomCient { //客户端
+
+    private Selector selector=null;
+    static  final int port=9900;
+    private Charset chaeset=Charset.forName("UTF-8");
+    private SocketChannel sc=null;
+    private String name="";
+    private static String USER_EXIST="system user exist,please change a name";
+    private static String USER_CONTENT_SPILIT="#@#";
+    private static boolean EXIT=false;
+
+
+    public static void main(String[] args) throws IOException {
+        new ChatRoomCient().init();
+    }
+
+    public void init() throws IOException {
+        selector=Selector.open();
+        sc=SocketChannel.open(new InetSocketAddress("127.0.0.1",port));
+        sc.configureBlocking(false);
+        sc.register(selector,SelectionKey.OP_READ);
+
+        //开辟一个线程来读取从服务器端的数据
+        Thread thread = new Thread(new ClientThread());
+        thread.start();
+
+        //在主线程中，从键盘读取输入数据输入到服务器
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNextLine()){
+            String line=scanner.nextLine();
+            if("".equals(line)){
+                continue;
+            }
+            if("".equals(name)){
+                name=line;
+                line=name+USER_CONTENT_SPILIT;
+            }else if("exit".equals(line)){
+                EXIT=true;
+            }else{
+                line=name+USER_CONTENT_SPILIT+line;
+            }
+            sc.write(chaeset.encode(line));
+            if(EXIT){
+                selector.wakeup(); //唤醒selector.select();中阻塞的线程，即使是返回为0
+                //thread.interrupt();
+                break;
+            }
+        }
+    }
+
+    private class ClientThread implements  Runnable{
+
+        @Override
+        public void run() {
+            try{
+                while (!EXIT){
+                    int readyChannels=selector.select();
+                    if(readyChannels==0){
+                        continue;
+                    }
+                    Set<SelectionKey> selectionKeys = selector.selectedKeys();//通过这个方法获取可用通道的集合
+                    Iterator<SelectionKey> keyIterator = selectionKeys.iterator();
+                    while (keyIterator.hasNext()){
+                        SelectionKey sk = keyIterator.next();
+                        keyIterator.remove();
+                        this.dealWithSelectionKey(sk);
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                try {
+                    selector.close();
+                    sc.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        private void dealWithSelectionKey(SelectionKey sk) throws IOException {
+            if(sk.isReadable()){
+                SocketChannel sc = (SocketChannel) sk.channel();
+                ByteBuffer buffer = ByteBuffer.allocate(1024);
+                String content="";
+                int len=0;
+                while ((len=sc.read(buffer))>0){
+                    buffer.flip();
+                    content+=chaeset.decode(buffer);
+                }
+
+                if(len<0){
+                    System.out.println("Disconnected from server!!!");
+                    return;
+                }
+                System.out.println(content);
+
+                //如系统发送通知名字已存在，则需要换个昵称
+                if(USER_EXIST.equals(content)){
+                    name="";
+                    return;
+                }
+                //sk.interestOps(SelectionKey.OP_READ);
+            }
+        }
+    }
+}
+		

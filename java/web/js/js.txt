@@ -1,0 +1,607 @@
+==================================================================================================
+js、juqery常用方法：
+
+$.closest()方法  从当前元素开始，逐级向上选取符合指定表达式的第一个元素，返回jquery对象
+
+$(obj).index()判断该元素在兄弟元素中的索引位置
+
+$(obj).toArray()将juqery对象转换为数据，即拥有了数组的原生方法
+
+或去DOM对象的class集合，并判断addBtn类存不存在：
+$(".addBtn")[0].classList.contains("addBtn")     this..classList.contains("addBtn") 
+
+js正则测试字符串是否匹配：
+function aa(val){
+return new RegExp(/a/).test(val);}
+
+测试是否是html：
+new RegExp(/<[^>]+>/).test('<a>a</a>')
+
+js判断数组是否包含一个元素：
+Array.prototype.contains=function(item){
+return RegExp(item).test(this)}
+
+js数组的splice方法：
+arr.splice(index,num)  删除指定位置开始的元素，删除num个
+
+jquery的inArray方法：
+$.inArray("5",arr，index)  返回包含指定元素的位置，不包含则返回-1，如果有三个参数，则指定index位置的元素是否是"5"
+
+jquery的slice方法：
+选取匹配元素中的一段连续的元素，并以jquery对象返回
+$('p').slice(0,1)选第一个  或$('p').slice(1)选取第二个到最后
+
+js对象键集合：
+Object.keys(a)[1]   Object.keys(a).length  
+
+js对象是否包含指定key：
+a.hasOwnProperty('a')   判断对象是否包含key
+
+jquery的resize()方法：
+ $(window).resize(）   当浏览器窗口的大小发生改变时触发
+
+$.type(a):
+测试变量类型  a=new Date() $.type(a)
+
+$('a').position():
+获取元素位置
+
+$.grep(arr,callback):
+数组过滤
+
+数组去重：
+$.unique=function(arr){
+ 
+  var a=[]
+
+  arr.forEach(function(item,i){
+  
+  if($.inArray(item,a)==-1){
+  
+    a.push(item)
+
+   }
+
+  })
+
+  return a
+
+}
+
+或者$.unique(arr)
+
+
+$.each(arr,function(i,item){})   return时结束本次循环   return false 结束所有循环
+
+var a='2we'  a.search('1') 判断字符串是否包含特定串，包含则返回索引，不包含返回-1
+
+a.match(/1/)    a.test(/1/)  a.exec(/1/)
+
+event.stopPropagation()阻止时间冒泡
+
+使用jquery的data方法，可以DOM对象传给data-attr中的属性值
+
+$(this).data("attr",this)  保存对象
+
+$(this).data("attr")  获取对象
+
+$(this).hover(fun1,fun2) 鼠标悬停事件，fun1移入，fun2移出方法
+
+var td=$(this).find("td")  $(td).add("[name='BIZ_FLD4']")   add() 添加选择器到集合中
+
+var td=$(this).find("td")  $(td).has("span")   has() 匹配有span元素的td
+
+$(this).find("td").filter(".class")    $(event.target).filter("[name='BIZ_FLD4']")   filter() 过滤自身集合    
+
+$(event.target)  获取方法触发元素对象   event.target.localName  获取方法触发元素的标签类型
+
+$("td").toggle(fun1(){},fun2(){}) 
+
+==================================================================================================
+
+浏览器重新加载:
+
+   window.location.reload() 重新加载当前页面
+   
+   window.location.replace(url)  url为新页面的链接
+
+---------------------------------------------------------------------------------------
+
+禁用DIV点击:
+
+$("#myTree div").eq(0).css("pointer-events","none");
+
+$("#myTree div").eq(0).css("pointer-events","");
+
+----------------------------------------------------------------------------------------
+
+在jkzkstat的depart.js中使用了拼音转化js,pinyinS()
+
+-----------------------------------------------------------------------------------------
+
+window.event.stopPropagation();//阻止冒泡，防止行事件的触发
+
+------------------------------------------------------------------
+
+filter()过滤集合   has（）过滤包含子集的父集    is（）判断自身集合是否包含   $this.is(event.target).length==0 可以作为点击事件判断
+
+$(".item").filter(function(index){
+            return $(".state",this).length==0
+        }).hide()
+
+
+-------------------------------------------------------------------
+
+propertychange input 元素属性变更时触发，input的value值变化时也触发
+
+$('.searchBox input').on('input propertychange',function (e) {})
+
+WdatePicker({dateFmt:'yyyy-MM-dd',onpicked:function (){textChange(this)}});  选择时间后触发
+
+
+---------------------------------------------------------------
+
+js正则：
+
+a.match(/^(?!-).*\w/)
+
+a.replace(/<\/\w+>|<[^<]+>/g,'')
+
+a.replace(/(<[^<]+>)/g,'')  <a></a>
+
+--------------------------------------------------------------
+
+var abstract=new Object()
+abstarct.extend=function(){}   添加静态成员
+abstarct.prototype.member=function(){}   添加实列成员，没有经过初始化
+
+在new一个类时，prototype的成员就经过初始化，然后赋给了实列化的对象
+
+method.apply(object,arguments):将method这个方法应用到object去执行，参数是arguments数组，但method并不是object的成员，
+
+可以变相理解为object.method(auguments) 虽然object没有method这个方法。
+
+----------------------------------------------------------------------------------------------
+JQuery为开发插件提供了两个方法：
+
+$.fn=$.prototype   
+
+$.fn.extend()  相当于$.prototype.extend=function(){} 添加或覆盖实现继承
+
+        $("#btn")会生成一个JQuery类的实列，即可以直接调用JQuery.prototype里的方法
+
+$.extend(obj)   为JQuery类添加类方法，可以理解为添加静态方法，所有对象都可以调用该方法
+
+$.extend(obj1,obj2...)  用一个或多个其他对象来扩展一个对象，返回被扩展的对象,第一个参数为被扩展对象
+
+   var a={name:tcl,age:24}
+   var b={name:aa,sex:nan}
+
+   $.extend(a,b) 的结果为：a={name:aa,age:24,sex:nan}
+
+   $.fn.extend({a:11})  $.fn.extend({a:2222,b:3333})  直接覆盖对象属性或方法
+
+------------------------------------------------------------------------------------------
+json['isHide'] = $(".formsubmit[name='isShow']").attr("checked")==undefined?"0":"1";
+
+------------------------------------------------------------------------------------------
+contents()查找匹配元素内部所有的一级子节点，包含文本节点，如果元素是iframe，则查找文档内容
+
+-----------------------------------------------------------------------------------
+子窗口调用父窗口方法
+
+父页面：
+var contType={
+    lookContent:function(_this) {
+        $(".normalDialog").empty();
+        var videoUrl = $(_this).attr("videourl");
+        $(".normalDialog").append('<iframe id="videoInfo" class="videoFrame" name="videoInfo" src="/stars/jkzkmanage/taskmanage/wx/video/index1.jsp?videoUrl=' + $.trim(videoUrl) + '" width="100%" height="100%" frameborder="0"></iframe>');
+        $('.normalDialog').dialog("open");
+    }
+}
+
+子页面：
+$("a[videourl]").live('click',function(){
+    parent.contType.lookContent(this);
+});
+
+父页面调用子页面方法：
+document.getElementById("historyTableFrame").contentWindow.functionName()
+parent.friendCircleMessage.initSupportList('.tabContent[role=support] tbody',arrlikeshow);直接使用iframe的name属性
+$("#voiceInfo").contents().find(".nextIcon")click()
+$("#voiceInfo").contents().find('.toggleDetail')[0].click()
+
+
+直接在父窗口通过iframe的那么属性调用子iframe的方法  tableInfo.showTable()
+
+historyTableFrame.style.display="none"  隐藏iframe  historyTableFrame是iframe的id
+
+子窗口直接使用parent.functonName()调用父窗口方法
+$("tr:eq(0)",parent.document).click()
+parent.voiceInfo.$(".mediaDetail").find(".view");
+
+window.frames['intimeTableFrame'] 获取id为intimeTableFrame子窗口
+
+window.frames['intimeTableFrame'].contentWindow.refreshTable（） 调用子窗口方法
+
+---------------------------------------------------------------------------------------
+
+jquery函数：
+
+jquery的on（）和one（）,one()只执行一次，然后删除自己
+ 
+   jqueryObj.on(event,[selector][,data],handler)
+
+   $("body").on({click:function(){
+  console.log(1)
+},keyup:function(){
+  console.log(2)
+}})  一个对象绑定多个函数
+
+   $("body").on("mouseenter mouseleave","body",data,function(event){
+      console.log(event.data) 
+     })
+
+   $("body").on("click.space",'body',data,function(event){
+   console(event.data['a'])
+})
+      
+          click.space为事件在space命名空间中添加click方法，$("body").trigger("click.space")触发   event.namespace命名空间
+   
+   $(".infos").on('done',{a:'aa'},function(event){
+   alert(event.data['a'])
+})
+ 
+         $(".infos").trigger('done') 自定义函数及触发   
+ 
+   event.type=='click'
+
+  
+
+（function($){})(JQuery) 是插件式的匿名函数自动调用，后面的括号是带的参数值（function(name){alert(name)})(11111)从上而下
+执行，DOM对象可能没加载完成，$(function(){})在DOM加载完成后执行
+
+$('#mediaArea').toggle();  toggle（）方法，元素显示则隐藏，隐藏则改为显示
+
+ $(this).parents('.rowWrap').toggleClass('unfold fold'); 在多个class中变换
+
+call(obj,args)和apply（obj,param1,param2...）  劫持另一个对象的方法，继承领一个对象的属性，obj代替Function类里的this对象
+
+动态改变方法内容：function aa(){console.log(111)} - eval("bb="+aa.toString())  - aa=function(){bb();console.log(22222222)}
+
+
+-----------------------------------------------------------------------------------------
+
+js数组排序：arr.sort(function(a,b){return a-b})  当比较的是数字是用-号，字符串是用大于小于号
+
+       对象数组比较：arr.sort(function(a,b){return a["param"]>b["param"]}) 属性param是字符串是用大于小于号，有可能出错，
+    
+   最好使用localeCompare（）方法比较
+
+
+       时间比较：转成时间戳在比较   return new Date(a).getTime()-new Date(b).getTime()
+
+ dataList=dataList.sort(function(a,b){
+                    var s1=$.trim(a["MSGTIME"]);
+                    var s2=$.trim(b["MSGTIME"]);
+                    return new Date(s1).getTime() -new Date(s2).getTime()
+                })
+
+ dataList.sort(function(a,b){
+                    var s1=$.trim(a["MSGTIME"]);
+                    var s2=$.trim(b["MSGTIME"]);
+                    return s1.localeCompare(s2)  字符串排序，考虑本地环境排序 升序  加负号为降序
+                })
+-----------------------------------------------------------------------------------------------
+
+if(window.getSelection){//光标聚焦文本最后，适用div
+		    var obj=$($chatItem).prev().find(".view");
+                    $(obj).focus();
+                    var range=window.getSelection();
+                    range.selectAllChildren($(obj)[0]);
+                    range.collapseToEnd();
+		}
+                $chatItem.remove();
+                window.event.returnValue=false;//阻止window的默认事件（鼠标、按键）
+
+$(".aa").click(function(){//适用input框
+        var obj=$(this).get(0);
+        if(obj.setSelectionRange){
+            obj.setSelectionRange(obj.value.length-3,obj.value.length-2);
+        }
+        obj.focus();
+    })
+
+------------------------------------------------------------------------------------------------
+
+可以通过判断对象的属性是否等于undefined来确定是否有该属性: typeof obj[id]=='undefined'
+
+<body oncontextmenu=self.event.returnValue=false>  屏蔽鼠标右键
+
+------------------------------------------------------------------
+
+时间格式化：
+Date.prototype.format = function (fmt) {
+    var obj = {
+        "M+": this.getMonth() + 1,
+        "d+": this.getDate(),
+        "H+": this.getHours(),
+        "m+": this.getMinutes(),
+        "s+": this.getSeconds(),
+        "y+": this.getFullYear(),
+        "S": this.getMilliseconds()
+    }
+   if(/(y+)/.test(fmt)){
+    	fmt=fmt.replace(RegExp.$1,(this.getFullYear()+"").substr(4-RegExp.$1.length))}
+    	for(var k in obj){
+    	if(new RegExp("("+k+")").test(fmt)){
+    		fmt=fmt.replace(RegExp.$1,(RegExp.$1.length==1?(obj[k]):(("00"+obj[k]).substr((""+obj[k]).length))))
+		}
+   }
+   return fmt;
+}
+
+
+--------------------------------------------------------------------------
+js中的prototype和constructor：
+
+function person(name){
+   this.name=name;
+   this.showMsg=function(){
+     console.log(name)
+}
+}
+
+var one=new person('tcl')  使用new生成的对象没有prototype属性
+
+person.prototype 使用function定义的对象有prototype属性，prototype属性指向prototype对象，他们是不同的，在prototype对象中
+
+又有一个constructor属性，constructor属性指向constructor对象，而这个constructor对象就是function本身，
+
+person.prototype.constructor=person
+
+person.prototype.from=function(){
+ console.log(11)
+}
+
+var one=new person('tcl')的执行过程可以理解为：var one={}   person.call(one,'js')
+
+js在创建对象时，执行函数：  
+
+     var Dialog = function(element,options){}
+
+    $.fn.dialog = Plugin;   new Dialog()时，执行Dialog()初始化
+
+    $.fn.dialog.Constructor = Dialog;
+
+
+$handle.on('mousedown.hc.drag',null,$.proxy(this.down,this));
+
+    $.proxy（b.a,b）将$handle绑定的函数的触发对象改为b，并执行b.a()方法，强制改变函数的作用域
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------
+
+使用JS下载资源
+
+    var href=window.document.location.href;
+    var url = href.substring(0,href.indexOf('stars')+5)+"/netmanage/download/"+fileName;
+
+function isExistsFile(url){
+    var flag = false;
+    var method = "GET";
+    try
+    {
+        if(!xmlHttp){
+            if(window.XMLHttpRequest)
+            {
+                xmlHttp = new XMLHttpRequest();
+            }
+            else
+            {
+                xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+        }
+        xmlHttp.open(method,url,false);
+        xmlHttp.send();
+        if(xmlHttp.status == "404")//资源还不存在
+        {
+            flag = false;
+        }
+        else
+        {
+            flag = true;
+        }
+    }
+    catch(e)
+    {
+        flag = false;
+    }
+    return flag;
+}
+
+---------------------------------------------------------------------------------------
+
+js对象拷贝：
+
+使用$.extend()  第一个参数为true时为深拷贝，属性值为对象或数组  $.extend(true,{},{z:1})
+
+p.z=1   typeof p['z']  与 p['z'].constructor 结果类似,数组的类型为object，数字为number  
+
+
+----------------------------------------------------------------------------------
+
+js正则匹配括号:
+
+  clueContentStr.replace(/\([^)]*\)/g,'');
+
+
+
+-----------------------------------------------------------------------------------
+
+获取元素的内容，不包括子元素内容
+
+$(".dialog-message").eq(0).prop("firstChild").nodeValue
+
+$(".dialog-message").eq(0).clone().children().remove().end().text();  end()方法返回前一级
+
+$(".dialog-message").eq(0).find(".kv").andSelf()  andSelf()将选中元素和前一级元素合并
+
+
+var text=$("#myTree div").eq(0).contents().filter(function(index){
+  
+     console.log(index,' ',this.nodeType)
+  
+     return this.nodeType===3
+
+}).text()
+
+contents():获取所有子节点，返回一个子节点数组   nodeType===3为文本节点  nodeType===1为html标签节点
+
+$("#myTree div").eq(0).contents().not('[nodeType=1]')
+
+$("#myTree div")[0].childNodes[0].nodeValue="zzzz"
+
+------------------------------------------------------------------------------------
+
+判断是对象还是数组:
+
+Object.prototype.toString.call({})==="[object Object]"
+
+Object.prototype.toString.call([])==="[object Array]"
+
+typeof Array.isArray==="function"
+
+
+-----------------------------------------------------------------------------------
+
+js判断数组中是否存在某字符串:
+
+arr.indexOf("aa")==-1
+
+-----------------------------------------------------------------------------------
+
+监听属性变化,动态添加修改属性  
+
+Object.defineProperty()单个添加
+
+Object.defineProperties(dataLoadObj.params,{
+            loadData:{
+                get:function () {
+                    return loadData;
+                },
+                set:function (newVal) {
+                    loadData=newVal;
+                    _this.methods.loadData();
+                }
+            }
+       })
+
+------------------------------------------------------------------------------------
+
+判空:
+
+$.judgeEmpty=function(val){
+    if(typeof val=="undefined"){
+        return true;
+    }else if(typeof val=="string"){
+        if(val=='undefined'||val=='null'||/^\s*$/.test(val)||val=='{}'){
+            return true;
+        }
+    }else if(val == "\\b" || val == "\\t" || val == "\\n" || val == "\\f" || val == "\\r"){
+        return true;
+    }else if(typeof val=="object"){
+        if($.isArray(val)&&val.length==0){
+            return true;
+        }
+        if(Object.prototype.toString.call(val)==="[object Object]"&&Object.keys(val).length==0){
+            return true;
+        }
+    }
+    return false;
+}
+
+---------------------------------------------------------------------------------------------
+
+滚动加载：
+
+var stepNum = 0;
+document.onmousewheel = function (e) {
+    if (flag) {
+        return;
+    }
+    var direction = 0;
+    if (e.wheelDelta) {
+        direction = e.wheelDelta;
+    } else if (e.detail) {
+        direction = e.detail;
+    }
+    console.log(direction)
+    var top = $(".chartContent")[0].scrollTop;
+    if (direction > 0 && top < 5) {
+        if (params.pageNo > 1) {
+            if (params.step != stepNum) {
+                return;
+            }
+            params.step = params.step + 1;
+            $(".topMessage").hide();
+            params.pageNo = params.pageNo - 1;
+            params.direction = "up";
+            console.log(params.pageNo)
+            console.log(params.direction)
+            ajaxWxHistoryData(params.sender, params.receiver, params.userid, params.pageSize, params.pageNo, params.step);
+        } else {
+            if (params.step != stepNum) {
+                return;
+            }
+            if (params.total > 20) {
+                $(".topMessage").show();
+            }
+        }
+        return;
+    }
+    var bottom = $(".chartContent")[0].scrollHeight - top;
+    if (direction < 0 && bottom < ($(".chartContent").height() + 5)) {
+        if (params.pageNo < params.totalPage) {
+            if (params.step != stepNum) {
+                return;
+            }
+            params.step = params.step + 1;
+            $(".buttomMessage").hide();
+            params.pageNo = params.pageNo + 1;
+            params.direction = "down";
+            console.log(params.pageNo)
+            console.log(params.direction)
+            ajaxWxHistoryData(params.sender, params.receiver, params.userid, params.pageSize, params.pageNo, params.step);
+        } else {
+            if (params.total > 20) {
+                $(".buttomMessage").show();
+            }
+        }
+    }
+}
+
+$.ajax:
+
+if (Object.keys(params).length == 0) {
+                    params = {
+                        sender: sender,
+                        receiver: receiver,
+                        userid: userid,
+                        pageSize: pageSize,
+                        pageNo: parseInt(parseInt(totalCount) / parseInt(pageSize) + 1),
+                        direction: "up",
+                        totalPage: parseInt(parseInt(totalCount) / parseInt(pageSize) + 1),
+                        total: totalCount,
+                        step: step
+                    };
+                }
+                if (params.step != retData.step) {
+                    return;
+                }
+                stepNum = params.step;

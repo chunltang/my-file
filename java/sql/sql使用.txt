@@ -1,0 +1,43 @@
+1.exists的使用
+  exists强调的是返回结果集,检测行的存在，不要求知道返回什么
+  
+  列：
+  select b.net_name,count(b.net_name) cnt from JK_NET_DISPATCH_DETAIL b where EXISTS (select 1 from jk_zk_record d where d.zk_id=b.zk_id and d.zk_status in ('10','11','13')) group by b.net_name
+  
+  子查询在case when及exists中的使用：
+  SELECT sendername,receivername,SENDERID,max(MSGTIME) maxtime,CASE WHEN EXISTS (SELECT 1 FROM JK_WXPERSONINFO k WHERE k.USERID=SENDERID AND USERID!='3708534336' AND NICKNAME IS not null) THEN 1 ELSE 0 END nameorder from MONIT_DETAIL_JKWXMESSAGE  WHERE TASKID='691297'  GROUP BY sendername,receivername,SENDERID  ORDER BY nameorder DESC,maxtime DESC
+
+
+2.linux连接pgSql查看连接
+
+  psql -d postgres -U postgres
+  select client_addr , client_hostname , count(*) from pg_stat_activity group by client_addr , client_hostname order by 3 desc ;
+  
+
+3.oracle获取表信息
+
+  获取字段备注信息
+	SELECT * FROM user_col_comments WHERE table_name='MONIT_DETAIL_JKWXMESSAGE'
+	
+  获取表字段信息
+	SELECT * FROM user_tab_columns  WHERE table_name='MONIT_DETAIL_JKWXMESSAGE'
+	
+  字段添加注释
+	COMMENT ON COLUMN MONIT_DETAIL_JKWXMESSAGE.BIZ_FLD2 IS '列表元素置顶排序'
+	
+  添加字段
+	ALTER TABLE JK_WXPERSONINFO ADD  goUpId varchar(10)
+	
+  添加默认值
+	ALTER TABLE JK_WXPERSONINFO MODIFY goUpId DEFAULT('0')
+	
+  oracle驱动和异常时连接备份机器
+	<driver-class>oracle.jdbc.driver.OracleDriver</driver-class>
+	<driver-url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = 12.15.4.241)(PORT = 1521)) (ADDRESS = (PROTOCOL = TCP)(HOST = 12.15.5.23)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = dg_taf_ora11g) (FAILOVER_MODE =(TYPE = SELECT)(METHOD =BASIC)(RETRIES = 60)(DELAY = 3))
+	))</driver-url><!--jdbc:oracle:thin:@//12.15.4.241:1521/ora11g--> 
+
+4.gp删除重复数据
+	delete from jk_fanting_statistics where ctid in (
+	select ctid  from (select * from( select *,row_number()over(PARTITION by taskid,zkbegintime,zkno order by zkbegintime) yy,ctid from  jk_fanting_statistics where zkbegintime>'2019-05-14 00:00:00') t
+	) g where g.yy=2 )
+

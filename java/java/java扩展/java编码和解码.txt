@@ -1,0 +1,24 @@
+1.js编码
+
+encodeURIComponent(fileName)将字符串使用UTF-8编码
+
+encodeURL(str)
+
+
+2.js解码
+
+decodeURL(str)
+
+
+
+3.java编码
+
+URLEncoder.encoer(str,"UTF-8")
+
+new String(sre.getBytes("ISO8895_1"),"UTF-8")
+
+
+4.java解码
+
+URLDecoder.decode(str,"UTF-8")
+

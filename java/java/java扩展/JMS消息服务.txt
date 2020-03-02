@@ -1,0 +1,96 @@
+J2EE中的重要规范JMS(Java Message Service)
+
+JMS使分布式通信耦合度更低，消息服务更加可靠以及异步性
+
+1.概念
+
+   JMS是java消息服务，JMS的客户端之间可以通过JMS服务进行异步的消息传输
+   
+2.消息模型
+
+   点对点和发布订阅模型
+   
+ 
+3.涉及到的概念
+
+   a.消息队列(Queue)  b.发送者(Sender)   c.接受者(Receiver)
+   
+   每个消息都被发送到一个特定的队列，接受者从队列中获取消息，队列保留着消息，直到他们被消费或者超时
+   
+   P2P的特点(点对点模式)：
+   
+      a.每个消息只有一个消费者
+	  
+	  b.发送者和接受者之间在事件上没有依赖性，也就是说当发送者发送消息后，不管接收有没有正在运行，它不影响到消息被发送队列
+	  
+	  c.接受者在成功接收消息之后需要向队列应答成功
+	  
+	  场景：如果希望发送的每个消息都应该被成功处理的话，那么你需要P2P模式
+	  
+	  
+4.Pub/Sub(发布订阅模式)--Publish/Subscriber
+
+   a.主题(Topic)   b.发布者(Publisher)   c.订阅者(Subsriber)
+
+   客服端将消息发送到主题，多个发布者将消息发送到Topic,系统将这些消息传递给多个订阅者
+   
+   特点：
+   
+      a.每个消息可以有多个消费者
+	  
+	  b.发布者和订阅者之间有时间上的依赖性。针对某个主题(Topic)的订阅者，它必须创建一个订阅者之后，才能消费发布者的消息，而且为了消费消息，订阅者必须保持运行的状态
+	  
+	  c.为了缓和这样严格的时间相关性，JMS允许订阅者创建一个可持续化的订阅。这样，即使订阅者没有被激活(运行),它也能接收到发布者的消息
+	  
+	  场景：如果你希望发送的消息可以不被做任何处理、或者被一个消费者处理、或者可以被多个消费者处理的话，采用Pub/Sub模式
+	  
+	  
+5.消息的消费
+
+    在JMS中，消息的产生和消费是异步的，对于消费来说，JMS的消息者可以通过两种方式来消费消息：
+	
+	    同步：订阅者或接受者调用receive方法来接收消息，receive方法在能够接收消息之前(或超时之前)将一直阻塞
+		
+		异步：订阅者或接受者可以注册为一个消息监听器。当消息到达之后，系统自动调用监听器的onMessage方法
+		
+
+7.JMS编程模型
+
+    a.ConnectionFactory   创建connection对象工厂，针对两种JMS消息模型，分别有QueueConnectionFacotory和TopicConnectionFactory，可以通过JNDI来查找ConnectionFactory对象
+	
+	b.Destination   表示消息生产者的消息发送目标或者说消息消费者的消息来源。对于消息生产者来说它的Destination是某个队列或者主题，对于消息消费者来说，它的Destination也是队列和主题，Destination实际就是两种类型的对象Queue和Topic，可以通过JNDI来查找Destination
+	
+	c.Connection表示在客户端和JMS系统之间建立的链接(对TCP/IP socket的包装)。Connection可以产生一个或多个Session，跟ConnectionFactory一样，Connection也有两种：QueueConnection和TopicConnection
+	
+	d.session  是我们操作消息的接口，可以通过session创建生产者、消费者、消息等，session提供了事务功能，当我们需要使用session发送/接收消息时，可以将这些发送/接收动作放到一个事务中，也分为QueueSession和TopicSession
+	
+	e.消息的生产者   由session创建，并用于将消息发送到Destination，分为QueueSender和TopicPublisher，可以调用消息生产者的方法(send和public方法)发送消息
+	
+	f.消息消费者     由session创建，用于接收发送到Destination的消息，分为QueueReceiver和TopicSubscriber，可分别通过session的createReceiver(Queue)或createSubscriber(Topic)来创建，也可以由session的createDurableSubscriber来创建持久化的订阅者
+	
+	g.MessageListener    消息监听器,如果注册了消息监听器，一旦消息到达，将自动调用监听器的onMessage方法.EJB的MDB就是一种MessageListener
+	
+	
+发送-接收模式---订阅发布模式(Topic)和负载均衡模式(Queue)：
+	
+    订阅发布模式(Topic) :消息被复制多份，分别发送给所有订阅者
+
+    负载均衡模式：一条消息将会发送给一个消费者，若果当前Queue没有消息消费者，消息将进行存储
+
+
+持久化消息(PERSISTENT Message)和非持久化消息(NON_PERSISTENT Message) ：在任意一种发送-接收模式下，是否进行持久化存储
+
+    非持久化只会存储在JMS服务节点的内存区域，不会存储在某种持久化介质上(ActiveMQ可支持的持久化介质有：KahaBD、AMQ、和关系型数据)，一旦程序宕机，消息会丢失
+	
+	JMS服务端会使用某种持久化存储方案保存这些消息，直到JMS服务端认为这些持久化的消息被消费端成功处理
+	
+	在JMS标准API中，使用setDeliveryMode标记消息发送者是发送的PERSISTENT Message还是NON_PERSISTENT Message
+	
+	
+持久化订阅(Durable-Subscribers)和非持久化(Non-Durable-Subscribers)订阅，是针对‘订阅-发布’模式的细节处理策略
+
+    标记为Durable-Subscribers的订阅者是否能获得某条消息和它是否曾经下线没有任何关系
+	
+	Non-Durable-Subscribers是指在‘订阅-发布’模式下，‘订阅-发布’模式的Topic队列不用为这些已经下线的订阅者保留消息
+   
+	  
