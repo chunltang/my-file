@@ -1,5 +1,8 @@
+﻿
 ﻿https://blog.csdn.net/helloloser/article/details/80421590   git的详细使用
 https://blog.csdn.net/qq_33039699/article/details/82866785  解决idea中git冲突
+https://blog.csdn.net/helloloser/article/details/80421590   git的详细使用
+https://blog.csdn.net/mrjkzhangma/article/details/89466811  第一次将项目push到远程创库
 
 1.git init
 选择一个目录执行git init初始化一个分支
@@ -43,6 +46,8 @@ https://blog.csdn.net/qq_33039699/article/details/82866785  解决idea中git冲�
 
 11.git reset  –hard HEAD~100
 回退到前100个版本
+git reset --hard HEAD~1
+
 
 
 12.rm b.txt
@@ -124,8 +129,10 @@ https://blog.csdn.net/qq_33039699/article/details/82866785  解决idea中git冲�
 30.git checkout  –b dev origin/dev
 把远程的origin的dev分支到本地来，于是可以使用命令创建本地dev分支 
 
-
 31.git pull
+
+32.git pull origin master
+
 抓取远程的分支到本地，需要先设置链接
 
 
@@ -203,3 +210,4 @@ git pull --rebase origin master
 git push origin  -u master
 
 ************************************************************************************************************************
+将需要的项目从github或者服务器上克隆下来，命令：git clone urlurl为项目服务器地址或github地址

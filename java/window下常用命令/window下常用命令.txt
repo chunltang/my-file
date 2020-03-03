@@ -1,5 +1,17 @@
+<<<<<<< HEAD
 1.列举当前的进程、进程路径、命令行、进程ID、父进程ID、线程数，内存使用
 wmic process get name,executablepath,commandline,processid,parentprocessid,threadcount,workingsetsize/value
 
 2. 根据执行的文件，如python.exe 的所属的进程
 wmic process where caption="python.exe" get processid,caption,commandline /value
+=======
+﻿1.列举当前的进程、进程路径、命令行、进程ID、父进程ID、线程数，内存使用
+wmic process get name,executablepath,commandline,processid,parentprocessid,threadcount,workingsetsize/value
+
+2. 根据执行的文件，如python.exe 的所属的进程
+wmic process where caption="python.exe" get processid,caption,commandline /value
+
+3.查看端口使用并杀死进程
+netstat -aon|findstr "8080"  #查看8080的使用情况
+taskkill /pid 4136 -t -f         #杀死pid为4136的进程 
+>>>>>>> 提交

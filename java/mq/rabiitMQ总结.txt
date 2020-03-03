@@ -101,3 +101,4 @@ topic：主题模式（通配符模式）
  AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
  builder.deliveryMode(2); //DeliveryMode等于2就说明这个消息是persistent的。1是默认，不是持久的。
  builder.expiration("30000");
+和路由模式类似，匹配有相似路由键的消息
