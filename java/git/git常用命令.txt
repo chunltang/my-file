@@ -163,8 +163,10 @@ git add <file1> <file2>...；git add .(git add -A)添加所有新添加的和有
 38.git pull --rebase origin master
 解决github里的readme文件没有下载下来的问题
 
+39.排除已加入控制的文件
+git rm --cached -r .idea
 
-39.克隆
+克隆
 1.从已经克隆下来的代码里用git指令显示其url地址可以使用remote -v参数。
 2.git remote 不带参数，可以列出已经存在的远程分支,加上-v参数可以列出详细信息，在每一个名字后面列出其远程url地址，此时， -v 选项(译注:此为 –verbose 的简写,取首字母),显示对应的克隆地址。
 3.使用Git命令将项目从github克隆下来的方法：
