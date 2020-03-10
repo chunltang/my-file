@@ -1,0 +1,36 @@
+1.需要打开设置
+打开设置:build-compiler-annotation Processors,勾选Enable annotation processing
+
+2.build project(ctrl F9)
+
+3.使用maven插件编译(maven-plugins-compiler:compile)
+mvn compile
+
+4.打包时报文件找不到，pom文件添加
+<build>
+        <finalName>my-processor</finalName>
+        <plugins>
+             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <compilerArgument>-proc:none</compilerArgument>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+    </build>

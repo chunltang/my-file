@@ -1,0 +1,383 @@
+@Slf4j
+如果不想每次都写private  final Logger logger = LoggerFactory.getLogger(当前类名.class); 可以用注解@Slf4j，需要引入lombok的jar
+
+@Data
+省略getter,setter方法，需要引入lombok的jar
+
+@Builder
+通过builder模式构建实体类
+
+----------------------------------------------------------------------------------------------------------------------------
+spring：
+
+@Import(ClassName.class)
+不用将类或者配置类通过注解注入到IOC容器中，而是在应用的时候在导入到当前容器中。
+
+@RestControllerAdvice
+springboot用RestControllerAdvice(ControllerAdvice)拦截异常并统一处理
+
+@Order
+注解主要用来控制配置类的加载顺序
+
+@ExceptionHandler(BindException.class)
+表示拦截指定异常类
+
+----------------------------------------------------------------------------------------------------------------------------
+
+@CrossOrigin
+
+注解@CrossOrigin解决跨域问题 (https://www.cnblogs.com/mmzs/p/9167743.html)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+thread、Schedule：
+
+@EnableAsync @Async
+注解@EnableAsync就可以使用多线程，@Async加在线程任务的方法上（需要异步执行的任务），定义一个线程任务，通过spring提供的ThreadPoolTaskExecutor就可以使用线程池
+
+@Scheduled
+@Scheduled(fixedRate = 5000) ：上一次开始执行时间点之后5秒再执行
+@Scheduled(fixedDelay = 5000) ：上一次执行完毕时间点之后5秒再执行
+@Scheduled(initialDelay=1000, fixedRate=5000) ：第一次延迟1秒后执行，之后按fixedRate的规则每5秒执行一次
+@Scheduled(cron="*/5 * * * * *") ：通过cron表达式定义规则
+
+cron中，还有一些特殊的符号，含义如下：
+(*)星号：可以理解为每的意思，每秒，每分，每天，每月，每年...
+(?)问号：问号只能出现在日期和星期这两个位置，表示这个位置的值不确定，每天3点执行，所以第六位星期的位置，我们是不需要关注的，就是不确定的值。同时：日期和星期是两个相互排斥的元素，通过问号来表明不指定值。比如，1月10日，比如是星期1，如果在星期的位置是另指定星期二，就前后冲突矛盾了。
+(-)减号：表达一个范围，如在小时字段中使用“10-12”，则表示从10到12点，即10,11,12
+(,)逗号：表达一个列表值，如在星期字段中使用“1,2,4”，则表示星期一，星期二，星期四
+(/)斜杠：如：x/y，x是开始值，y是步长，比如在第一位（秒） 0/15就是，从0秒开始，每15秒，最后就是0，15，30，45，60    另：*/y，等同于0/y
+
+
+启动类添加
+@EnableScheduling
+
+----------------------------------------------------------------------------------------------------------------------------
+
+springboot重试：
+
+@EnableRetry
+启动类添加
+
+@Retryable(value = Exception.class,maxAttempts = 3,backoff = @Backoff(delay = 2000,multiplier = 1.5))
+方法添加
+value值表示当哪些异常的时候触发重试，maxAttempts表示最大重试次数默认为3，delay表示重试的延迟时间，multiplier表示上一次延时时间是这一次的倍数
+
+----------------------------------------------------------------------------------------------------------------------------
+spring事务：
+
+@EnableTransactionManagement @Transactional
+Spring Boot 使用事务非常简单，首先使用注解 @EnableTransactionManagement 开启事务支持后，然后在访问数据库的Service方法上添加注解 @Transactional 便可
+关于事务管理器，不管是JPA还是JDBC等都实现自接口 PlatformTransactionManager 如果你添加的是 spring-boot-starter-jdbc 依赖，框架会默认注入 DataSourceTransactionManager 实例。
+如果你添加的是 spring-boot-starter-data-jpa 依赖，框架会默认注入 JpaTransactionManager 实例。
+
+
+@TransactionalEventListener：
+在项目中，往往需要执行数据库操作后，发送消息或事件来异步调用其他组件执行相应的操作，例如：
+用户注册后发送激活码；
+配置修改后发送更新事件等。
+但是，数据库的操作如果还未完成，此时异步调用的方法查询数据库发现没有数据，这就会出现问题。
+为了解决上述问题，Spring为我们提供了两种方式：
+(1) @TransactionalEventListener注解
+(2) 事务同步管理器TransactionSynchronizationManager
+以便我们可以在事务提交后再触发某一事件。
+
+
+错误使用：
+
+1.接口中A、B两个方法，A无@Transactional标签，B有，上层通过A间接调用B，此时事务不生效。
+
+2.接口中异常（运行时异常）被捕获而没有被抛出。
+  默认配置下，spring 只有在抛出的异常为运行时 unchecked 异常时才回滚该事务，
+  也就是抛出的异常为RuntimeException 的子类(Errors也会导致事务回滚)，
+  而抛出 checked 异常则不会导致事务回滚 。可通过 @Transactional rollbackFor进行配置。
+
+3.多线程下事务管理因为线程不属于 spring 托管，故线程不能够默认使用 spring 的事务,
+  也不能获取spring 注入的 bean 。
+  在被 spring 声明式事务管理的方法内开启多线程，多线程内的方法不被事务控制。
+  一个使用了@Transactional 的方法，如果方法内包含多线程的使用，方法内部出现异常，
+  不会回滚线程中调用方法的事务。
+  
+  
+事务特性：
+
+事物是一个整体，结果就两种(成功或者失败)
+　　要么全部成功（提交），要么全部失败（回滚），就算成功一部分也要（回滚）
+事物的四个特性
+　　原子性：对数据进行操作的时候，要么全都执行，要么全都不执行。
+　　一致性：和原子性是分不开的，事务执行成功，说明全部都执行了，那么就使数据库从一个一致性状态变到另一个一致性状了。
+　　隔离性： 一个事务的执行不能被其他事务干扰
+　　持续性： 事务一旦提交成功，那么数据库里的数据就会永久性的改变。
+
+----------------------------------------------------------------------------------------------------------------------------
+
+mybatis-plus：
+
+@Mapper @MapperScan
+在接口类上添加了@Mapper，在编译之后会生成相应的接口实现类
+@MapperScan指定要变成实现类的接口所在的包，然后包下面的所有接口在编译之后都会生成相应的实现类，@MapperScan({"com.kfit.*.mapper","org.kfit.*.mapper"}) 指定多个包
+
+@tableName
+@tableId
+@tableField
+
+----------------------------------------------------------------------------------------------------------------------------
+
+springboot事件监听：
+
+@EventListener ：
+spring的事件监听有三个部分组成，事件（ApplicationEvent)、监听器(ApplicationListener)和事件发布操作
+事件是一个简单pojo，需要继承ApplicationEvent，监听器可以实现ApplicationListener接口或者使用注解@EventListener 
+
+----------------------------------------------------------------------------------------------------------------------------
+
+bean的生命周期：
+
+@Scope：注解在类上，描述spring容器如何创建Bean实例。
+（1）singleton： 表示在spring容器中的单例，通过spring容器获得该bean时总是返回唯一的实例
+（2）prototype：表示每次获得bean都会生成一个新的对象
+（3）request：表示在一次http请求内有效（只适用于web应用）
+（4）session：表示在一个用户会话内有效（只适用于web应用）
+（5）globalSession：表示在全局会话内有效（只适用于web应用）在多数情况，我们只会使用singleton和prototype两种scope，如果未指定scope属性，默认为singleton
+
+
+@DependsOn
+指定bean初始化前先要初始化其他bean
+如@DependsOn(value = {"springContextUtil","rabbitTemplate"}) 可以指定多个
+
+
+InitializingBean接口：
+可以指定初始化装配bean的属性后，做某些操作，如执行其他事或者给当前bean添加修改属性
+
+----------------------------------------------------------------------------------------------------------------------------
+
+servlet：
+@PostConstruct
+该注解被用来修饰一个非静态的void（）方法。被@PostConstruct修饰的方法会在服务器加载Servlet的时候运行，并且只会被服务器执行一次。PostConstruct在构造函数之后执行，init（）方法之前执行。
+通常我们会是在Spring框架中使用到@PostConstruct注解 该注解的方法在整个Bean初始化中的执行顺序：
+Constructor(构造方法) -> @Autowired(依赖注入) -> @PostConstruct(注释的方法)
+
+
+----------------------------------------------------------------------------------------------------------------------------
+@component 
+把普通pojo实例化到spring容器中，相当于配置文件中的<bean id="" class=""/>
+@Component,@Service,@Controller,@Repository注解的类，并把这些类纳入进spring容器中管理。
+
+@Configuration @Bean
+用于定义配置类，可替换xml配置文件，被注解的类内部包含有一个或多个被@Bean注解的方法，这些方法将会被AnnotationConfigApplicationContext或AnnotationConfigWebApplicationContext类进行扫描，并用于构建bean定义，初始化Spring容器。
+
+@SpringBootApplication
+注解相当于使用@Configuration，@EnableAutoConfiguration以及@ComponentScan 与他们的默认属性。
+@EnableAutoConfiguration：启用Spring Boot的自动配置机制，类似在java代码中自动import，属于自动导入。
+@Configuration：有自动导入就有属于自动导出，需要配合该类中方法的@bean，这就相当于一个xml配置
+@ComponentScan：扫描所有使用@Component 的类，不管自动导入还是导出，首先需要告诉spring boot到哪里去找导入导出的原料
+
+@Conditional
+根据条件判断是否注入bean
+
+@ConditionOnMissingBean
+没有条件中的bean时注入当前bean
+
+@SpringBootApplication：
+@SpringBootApplication=@ComponentScan+@Configuration+@EnableAutoConfiguration：约定优于配置@EnableAutoConfiguration启用 Spring 应用程序上下文的自动配置，
+试图猜测和配置您可能需要的bean。自动配置类通常采用基于你的classpath 和已经定义的 beans 对象进行应用。
+
+@EnableAutoConfiguration：
+被 @EnableAutoConfiguration 注解的类所在的包有特定的意义，并且作为默认配置使用。通常推荐将 @EnableAutoConfiguration 配置在 root 包下，这样所有的子包、类都可以被查找到
+
+----------------------------------------------------------------------------------------------------------------------------
+@PropertySource
+@PropertySource(value = {"classpath:febs.properties"})
+通过@PropertySource注解将properties配置文件中的值存储到Spring的 Environment中，Environment接口提供方法去读取配置文件中的值，参数是properties文件中定义的key值
+
+@ConfigurationProperties(prefix = "febs")
+想把配置文件的信息，读取并自动封装成实体类，这样子，我们在代码里面使用就轻松方便多了，这时候，我们就可以使用@ConfigurationProperties，它可以把同类的配置信息自动封装成实体类
+
+@EnableConfigurationProperties
+通过@EnableConfigurationProperties(ConnectionSettings.class)来明确指定需要用哪个实体类来装载配置信息
+
+----------------------------------------------------------------------------------------------------------------------------
+
+@Value("${spring.redis.host}")
+@Value(“${xxxx}”)注解从配置文件读取值的用法 
+@Value(“#{}”) 表示SpEl表达式通常用来获取bean的属性，或者调用bean的某个方法。当然还有可以表示常量 
+
+@AliasFor
+@AliasFor是一个注解,用于为注解属性声明别名。
+
+@PathVariable
+接收请求路径中占位符的值，@RequestMapping(value=”user/{id}/{name}”)
+通过 @PathVariable("id") 可以将URL中占位符参数{id}绑定到处理器类的方法形参中@PathVariable(“xxx“)
+
+@validated
+spring-boot中可以用@validated来校验数据，如果数据异常则会统一抛出异常，方便异常中心统一处理。
+
+@DirtiesContext
+Spring Test支持的一个很好的特性是应用程序上下文在测试之间缓存，因此如果在测试用例中有多个方法，或者具有相同配置的多个测试用例，
+它们只会产生启动应用程序一次的成本。使用@DirtiesContext注解可以清空缓存，让程序重新加载。
+
+@AutoConfigureMockMvc 
+不启动服务器,使用mockMvc进行测试http请求。启动了完整的Spring应用程序上下文，但没有启动服务器
+
+@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) 
+SpringBootTest.WebEnvironment.RANDOM_PORT设置随机端口启动服务器（有助于避免测试环境中的冲突）
+
+----------------------------------------------------------------------------------------------------------------------------
+
+枚举类型：
+
+入参使用 @JsonCreator    根据值来转为枚举对象
+出参使用 @JsonValue      有枚举对象时使用jakson获取对应的值
+
+@JsonValue
+可以用在get方法或者属性字段上，一个类只能用一个，当加上@JsonValue注解时，该类的json化结果，只有这个get方法的返回值，而不是这个类的属性键值对.
+@JsonCreator
+当json在反序列化时，默认选择类的无参构造函数创建类对象，没有无参构造函数时会报错，
+@JsonCreator作用就是指定一个有参构造函数供反序列化时调用。
+
+----------------------------------------------------------------------------------------------------------------------------
+
+spring AOP：
+@Aspect:作用是把当前类标识为一个切面供容器读取
+@Pointcut：Pointcut是植入Advice的触发条件。每个Pointcut的定义包括2部分，一是表达式，二是方法签名。方法签名必须是 public及void型。可以将Pointcut中的方法看作是一个被Advice引用的助记符，因为表达式不直观，因此我们可以通过方法签名的方式为 此表达式命名。因此Pointcut中的方法只需要方法签名，而不需要在方法体内编写实际代码。
+@Around：环绕增强，相当于MethodInterceptor
+@AfterReturning：后置增强，相当于AfterReturningAdvice，方法正常退出时执行
+@Before：标识一个前置增强方法，相当于BeforeAdvice的功能，相似功能的还有
+@AfterThrowing：异常抛出增强，相当于ThrowsAdvice
+@After: final增强，不管是抛出异常或者正常退出都会执行
+
+@Around(value = "execution(* com.rq.aop.controller..*.*(..))") 匹配指定包下的所有类和方法 第一个指定修饰符
+@Around(value = "@annotation(com.zs.gms.common.annotation.Log) && @annotation(annLog)"  指定注解，@annotation(annLog)为自定义注解的引用
+
+----------------------------------------------------------------------------------------------------------------------------
+
+Swagger2:
+@Api：修饰整个类，描述Controller的作用
+@ApiOperation：描述一个类的一个方法，或者说一个接口
+@ApiParam：单个参数描述
+@ApiModel：用对象实体来作为入参
+@ApiProperty：用对象接实体收参数时，描述对象的一个字段
+@ApiResponse：HTTP响应其中1个描述
+@ApiResponses：HTTP响应整体描述
+@ApiIgnore：使用该注解忽略这个API
+@ApiError ：发生错误返回的信息
+@ApiImplicitParam：一个请求参数
+@ApiImplicitParams： 多个请求参数
+
+----------------------------------------------------------------------------------------------------------------------------
+
+java对象和xml转换：
+@XmlRootElement      // xml 文件的根元素 
+@XmlElement 
+@XmlAccessorType     // 控制默认情况下是否对字段或 Javabean 属性进行系列化。 
+@XmlTransient        //忽略字段
+@XmlJavaTypeAdaptor  //指定接口的实现类
+
+XmlAccessorType  
+默认规则： 
+默认情况下，如果包中不存在 @XmlAccessorType，那么假定使用以下包级别注释。 
+@XmlAccessorType(XmlAccessType.PUBLIC_MEMBER) 
+默认情况下，如果类中不存在 @XmlAccessorType，并且没有任何超类是使用 @XmlAccessorType 注释的，则假定在类中使用以下默认注释： 
+@XmlAccessorType(XmlAccessType.PUBLIC_MEMBER) 
+可能值： 
+FIELD:    JAXB 绑定类中的每个非静态、非瞬态字段将会自动绑定到 XML，除非由 XmlTransient 注释。 
+NONE:     所有字段或属性都不能绑定到 XML，除非使用一些 JAXB 注释专门对它们进行注释。 
+PROPERTY: JAXB 绑定类中的每个获取方法/设置方法对将会自动绑定到 XML，除非由 XmlTransient 注释。 
+PUBLIC_MEMBER:每个公共获取方法/设置方法对和每个公共字段将会自动绑定到 XML，除非由 XmlTransient 注释
+
+
+----------------------------------------------------------------------------------------------------------------------------
+rabbitMq：
+
+应用场景：
+业务模块解耦，异步通信，高并发限流，超时延迟处理等
+
+@Primary
+Primary标签指若不指定链接，默认选择链接，在配置了多个链接必须添加@Primary标签，否则有可能会找不到对应的rabbitMQ的连接(当配置多个同类bean时，需要制定默认加载的bean)。
+
+@Qualifier
+Qualifier注解的用处：当一个接口有多个实现的时候，为了指名具体调用哪个类的实现
+
+@RabbitListener(queues = RabbitMqConfig.QUEUE_A)
+指定消费者监听队列，可以在类或者监听的方法上使用
+
+@RabbitHandler
+指定消费者监听方法，需要@RabbitListener指定类
+
+>>>
+https://www.jianshu.com/p/e647758a7c50
+RabbitAdmin类
+该类封装了对 RabbitMQ 的管理操作，用于增删队列，交换器,及队列和交换器绑定和解绑，交换器和交换器绑定与解绑
+
+RabbitTemplate类
+Spring AMQP 提供了 RabbitTemplate 来简化 RabbitMQ 发送和接收消息操作
+设置 RabbitTemplate 的默认交换器、默认路由键、默认队列
+<<<
+
+@SendTo
+@RabbitListener注解的消费者监听方法，默认有几个可以自动注入的参数对象：
+org.springframework.amqp.core.Message 消息原始对象
+	com.rabbitmq.client.Channel 接收消息所所在的channel
+	org.springframework.messaging.Message amqp的原始消息对象转换为messaging后的消息对象，该消息包含自定义消息头和标准的amqp消息头
+此外，非以上参数，自定义参数对象可以通过@Header/@Headers/@Payload标注为消息头或消息体接受对象。
+
+@SendTo注解，标注方法将返回对象包装为Message对象发送到指定的队列。
+当不指定@SendTo的value值时，将通过默认exchange发送到默认队列
+	当指定@SendTo的value值时，将通过默认或指定的exchange发送到指定队列
+	对于value值取值为：exchange/routingkey形式
+		a/b代表exchange为a, routingkey为b
+		仅a代表，routingkey为a
+	
+@SendTo只在收到的Message没有replyTo属性时使用
+
+----------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------
+
+ApplicationRunner类：
+在开发中可能会有这样的情景。需要在容器启动的时候执行一些内容。比如读取配置文件，数据库连接之类的。
+SpringBoot给我们提供了两个接口来帮助我们实现这种需求。这两个接口分别为CommandLineRunner和ApplicationRunner。他们的执行时机为容器启动完成的时候
+这两个接口的不同之处在于：ApplicationRunner中run方法的参数为ApplicationArguments，而CommandLineRunner接口中run方法的参数为String数组
+
+
+
+
+@Aspect  @Around的使用：
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Log {
+    String value() default "";
+}
+
+@Slf4j
+@Component
+@Aspect
+public class LogAspect {
+    @Around(value = "@annotation(com.zs.gms.common.annotation.Log) && @annotation(annLog)",argNames = "point,annLog")
+    public Object around(ProceedingJoinPoint point, Log annLog) throws Throwable {
+        Object result;
+        long beginTime = System.currentTimeMillis();
+        result=point.proceed();
+        long time = System.currentTimeMillis() - beginTime;
+        log.info("{},消耗时长：{}",annLog.value(),beginTime);
+        return result;
+    }
+
+    @Around(value = "@annotation(com.zs.gms.common.annotation.Log)")
+    public Object around2(ProceedingJoinPoint point) throws Throwable {
+        Object result;
+        long beginTime = System.currentTimeMillis();
+        result=point.proceed();
+        long time = System.currentTimeMillis() - beginTime;
+        Signature signature = point.getSignature();//此处joinPoint的实现类是MethodInvocationProceedingJoinPoint
+        MethodSignature methodSignature = (MethodSignature) signature;//获取参数名
+        Log annLog = methodSignature.getMethod().getAnnotation(Log.class);
+        log.info("{},消耗时长==>>>：{}",annLog.value(),beginTime);
+        return result;
+    }
+}
+
+----------------------------------------------------------------------------------------------------------------------------

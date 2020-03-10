@@ -5,3 +5,42 @@ redis-cli -h hostname -p port -a password SCRIPT LOAD "$(cat lua_script_file_loc
 config.lua：
 redis.call("config", "get", "bind")
 redis-cli --eval config.lua 
+
+2.RedisTemplate执行lua脚本
+/**
+     * 添加监听配置
+     * */
+    public static void addConfig(){
+        String str="return redis.call('config','set','notify-keyspace-events','$E')";
+        RedisService.getTemplate(StaticConfig.KEEP_DB).execute(new DefaultRedisScript<String>(str), null);
+    }
+
+    public static boolean lockService(String key, String value, long seconds) {
+        RedisTemplate<String, Object> template = getTemplate(StaticConfig.KEEP_DB);
+        String scriptStr = "if 1 == redis.call('setnx',KEYS[1],ARGV[1]) then" +
+                " redis.call('expire',KEYS[1],ARGV[2])"+
+                " return 1;" +
+                " elseif ARGV[1] == redis.call('get',KEYS[1]) then" +
+                " return 1;" +
+                " else "+
+                " return 0;"+
+                " end;";
+        return  execScript(scriptStr, key, value,String.valueOf(seconds));
+    }
+
+    public static boolean releaseLock(String key, String... values) {
+        String scriptStr = " if ARGV[1] == redis.call('get',KEYS[1]) then" +
+                " redis.call('del',KEYS[1])" +
+                " return 1;" +
+                " else" +
+                " return 0;" +
+                " end;";
+        return execScript(scriptStr, key, values);
+    }
+
+    public static Boolean execScript(String scriptStr, String key, String... values) {
+        RedisTemplate<String, Object> template = getTemplate(StaticConfig.KEEP_DB);
+        List<String> keys = new ArrayList<>();
+        keys.add(key);
+        return template.execute(new DefaultRedisScript<Boolean>(scriptStr, Boolean.class), keys, values);
+    }

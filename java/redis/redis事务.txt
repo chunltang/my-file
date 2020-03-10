@@ -1,0 +1,7 @@
+1.RedisTemplate执行事务
+template.setEnableTransactionSupport(true);
+        template.watch(RedisKey.VEH_ID_IP);// watch某个key,当该key被其它客户端改变时,则会中断当前的操作
+        template.multi();
+        template.delete(RedisKey.VEH_ID_IP);
+        hashOperations.putAll(RedisKey.VEH_ID_IP,valueMap);
+        template.exec();

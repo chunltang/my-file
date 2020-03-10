@@ -394,6 +394,7 @@ docker container update --restart=always 容器名字
 2.直接改配置文件 （https://www.cnblogs.com/Zfc-Cjk/p/10851847.html）
 
 ***************************************************************************************
+
 查看所有容器CPU使用状态：
 
 docker stats
@@ -407,6 +408,7 @@ EXPOSE        暴露端口   #EXPOSE 8080
 ADD             复制文件到容器    #ADD a.jar  app.jar
 
 ***************************************************************************************
+
 docker容器时间与主机时间不一致（https://www.cnblogs.com/okong/p/docker-time-diff.html）
 
 1.docker cp /etc/localtime 500b725eacea:/etc/localtime
@@ -416,3 +418,19 @@ docker容器时间与主机时间不一致（https://www.cnblogs.com/okong/p/doc
 在Dockerfile中添加命令:
 RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo "Asia/Shanghai" > /etc/timezone
+
+***************************************************************************************
+
+docker启动WARNING：IPv4 forwarding is disabled. Networking will not work. 报错解决办法 
+
+centos 7 docker 启动了一个web服务 但是启动时 报
+WARNING: IPv4 forwarding is disabled. Networking will not work.
+#需要做如下配置
+解决办法：
+vi /etc/sysctl.conf
+net.ipv4.ip_forward=1  #添加这段代码
+#重启network服务
+systemctl restart network && systemctl restart docker
+#查看是否修改成功 （备注：返回1，就是成功）
+[root@docker-node2 ~]# sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
