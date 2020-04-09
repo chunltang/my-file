@@ -1,0 +1,327 @@
+{
+  "type": "index_parallel",
+  "ioConfig": {
+    "type": "index_parallel",
+    "firehose": {
+      "type": "inline",
+      "data": "{\"vehicleId\":10005,\"modeState\":4,\"dispState\":1,\"taskState\":6,\"runFlag\":0,\"updateTime\":\"2019-12-11 15:08:37\",\"monitor\":{\"msgProdDevCode\":10001,\"fromVakCode\":10001,\"year\":119,\"month\":11,\"day\":11,\"hour\":15,\"minute\":8,\"second\":37.0,\"lockedDeviceCode\":0,\"monitorDataType\":0,\"vakMode\":0,\"currentTaskCode\":0,\"trackCode\":0,\"vakRequestCode\":0,\"currentGear\":0,\"gnssState\":0,\"longitude\":0.0,\"latitude\":0.0,\"xWorld\":708670.775,\"yWorld\":3088294.569,\"xLocality\":0,\"yLocality\":0,\"yawAngle\":3130,\"navAngle\":3117,\"wheelAngle\":699,\"curSpeed\":0,\"addSpeed\":0,\"countofObstacle\":0,\"realSteerAngle\":0,\"realSteerRotSpeed\":0,\"realAcceleratorRate\":0,\"realHydBrakeRate\":0,\"realElectricFlowBrakeRate\":0,\"realMotorState\":0,\"realForwardBrakeState\":0,\"realElectricBrakeState\":0,\"realParkingBrakeState\":0,\"realLoadBrakeState\":0,\"realMotorRotSpeed\":0,\"realHouseLiftRate\":0,\"realTurnLeftlightState\":0,\"realTurnRightlightState\":0,\"realNearLightState\":0,\"realContourLightState\":0,\"realBrakeLightState\":0,\"realEmergencyLightState\":111111111,\"vecObstacle\":[]}}\n"
+    }
+  },
+  "tuningConfig": {
+    "type": "index_parallel"
+  },
+  "dataSchema": {
+    "dataSource": "inline_data",
+    "granularitySpec": {
+      "type": "uniform",
+      "queryGranularity": "HOUR",
+      "rollup": true,
+      "segmentGranularity": "DAY"
+    },
+    "parser": {
+      "type": "string",
+      "parseSpec": {
+        "format": "json",
+        "timestampSpec": {
+          "column": "updateTime",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "dimensionsSpec": {
+          "dimensions": [
+            "dispState",
+            "modeState",
+            "runFlag",
+            "taskState",
+            "vehicleId",
+            "monitor_addSpeed",
+            "monitor_countofObstacle",
+            "monitor_currentGear",
+            "monitor_currentTaskCode",
+            "monitor_curSpeed",
+            "monitor_day",
+            "monitor_fromVakCode",
+            "monitor_gnssState",
+            "monitor_latitude",
+            "monitor_lockedDeviceCode",
+            "monitor_longitude",
+            "monitor_monitorDataType",
+            "monitor_msgProdDevCode",
+            "monitor_navAngle",
+            "monitor_realAcceleratorRate",
+            "monitor_realBrakeLightState",
+            "monitor_realContourLightState",
+            "monitor_realElectricBrakeState",
+            "monitor_realElectricFlowBrakeRate",
+            "monitor_realEmergencyLightState",
+            "monitor_realForwardBrakeState",
+            "monitor_realHouseLiftRate",
+            "monitor_realHydBrakeRate",
+            "monitor_realLoadBrakeState",
+            "monitor_realMotorRotSpeed",
+            "monitor_realMotorState",
+            "monitor_realNearLightState",
+            "monitor_realParkingBrakeState",
+            "monitor_realSteerAngle",
+            "monitor_realSteerRotSpeed",
+            "monitor_realTurnLeftlightState",
+            "monitor_realTurnRightlightState",
+            "monitor_trackCode",
+            "monitor_vakMode",
+            "monitor_vakRequestCode",
+            "monitor_wheelAngle",
+            "monitor_xLocality",
+            "monitor_yawAngle",
+            "monitor_yLocality",
+            "monitor_yWorld"
+          ]
+        },
+        "flattenSpec": {
+          "useFieldDiscovery": true,
+          "fields": [
+            {
+              "type": "path",
+              "name": "monitor_addSpeed",
+              "expr": "$.monitor.addSpeed"
+            },
+            {
+              "type": "path",
+              "name": "monitor_countofObstacle",
+              "expr": "$.monitor.countofObstacle"
+            },
+            {
+              "type": "path",
+              "name": "monitor_curSpeed",
+              "expr": "$.monitor.curSpeed"
+            },
+            {
+              "type": "path",
+              "name": "monitor_currentGear",
+              "expr": "$.monitor.currentGear"
+            },
+            {
+              "type": "path",
+              "name": "monitor_currentTaskCode",
+              "expr": "$.monitor.currentTaskCode"
+            },
+            {
+              "type": "path",
+              "name": "monitor_day",
+              "expr": "$.monitor.day"
+            },
+            {
+              "type": "path",
+              "name": "monitor_fromVakCode",
+              "expr": "$.monitor.fromVakCode"
+            },
+            {
+              "type": "path",
+              "name": "monitor_gnssState",
+              "expr": "$.monitor.gnssState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_hour",
+              "expr": "$.monitor.hour"
+            },
+            {
+              "type": "path",
+              "name": "monitor_latitude",
+              "expr": "$.monitor.latitude"
+            },
+            {
+              "type": "path",
+              "name": "monitor_lockedDeviceCode",
+              "expr": "$.monitor.lockedDeviceCode"
+            },
+            {
+              "type": "path",
+              "name": "monitor_longitude",
+              "expr": "$.monitor.longitude"
+            },
+            {
+              "type": "path",
+              "name": "monitor_minute",
+              "expr": "$.monitor.minute"
+            },
+            {
+              "type": "path",
+              "name": "monitor_monitorDataType",
+              "expr": "$.monitor.monitorDataType"
+            },
+            {
+              "type": "path",
+              "name": "monitor_month",
+              "expr": "$.monitor.month"
+            },
+            {
+              "type": "path",
+              "name": "monitor_msgProdDevCode",
+              "expr": "$.monitor.msgProdDevCode"
+            },
+            {
+              "type": "path",
+              "name": "monitor_navAngle",
+              "expr": "$.monitor.navAngle"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realAcceleratorRate",
+              "expr": "$.monitor.realAcceleratorRate"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realBrakeLightState",
+              "expr": "$.monitor.realBrakeLightState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realContourLightState",
+              "expr": "$.monitor.realContourLightState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realElectricBrakeState",
+              "expr": "$.monitor.realElectricBrakeState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realElectricFlowBrakeRate",
+              "expr": "$.monitor.realElectricFlowBrakeRate"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realEmergencyLightState",
+              "expr": "$.monitor.realEmergencyLightState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realForwardBrakeState",
+              "expr": "$.monitor.realForwardBrakeState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realHouseLiftRate",
+              "expr": "$.monitor.realHouseLiftRate"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realHydBrakeRate",
+              "expr": "$.monitor.realHydBrakeRate"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realLoadBrakeState",
+              "expr": "$.monitor.realLoadBrakeState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realMotorRotSpeed",
+              "expr": "$.monitor.realMotorRotSpeed"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realMotorState",
+              "expr": "$.monitor.realMotorState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realNearLightState",
+              "expr": "$.monitor.realNearLightState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realParkingBrakeState",
+              "expr": "$.monitor.realParkingBrakeState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realSteerAngle",
+              "expr": "$.monitor.realSteerAngle"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realSteerRotSpeed",
+              "expr": "$.monitor.realSteerRotSpeed"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realTurnLeftlightState",
+              "expr": "$.monitor.realTurnLeftlightState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_realTurnRightlightState",
+              "expr": "$.monitor.realTurnRightlightState"
+            },
+            {
+              "type": "path",
+              "name": "monitor_second",
+              "expr": "$.monitor.second"
+            },
+            {
+              "type": "path",
+              "name": "monitor_trackCode",
+              "expr": "$.monitor.trackCode"
+            },
+            {
+              "type": "path",
+              "name": "monitor_vakMode",
+              "expr": "$.monitor.vakMode"
+            },
+            {
+              "type": "path",
+              "name": "monitor_vakRequestCode",
+              "expr": "$.monitor.vakRequestCode"
+            },
+            {
+              "type": "path",
+              "name": "monitor_vecObstacle",
+              "expr": "$.monitor.vecObstacle"
+            },
+            {
+              "type": "path",
+              "name": "monitor_wheelAngle",
+              "expr": "$.monitor.wheelAngle"
+            },
+            {
+              "type": "path",
+              "name": "monitor_xLocality",
+              "expr": "$.monitor.xLocality"
+            },
+            {
+              "type": "path",
+              "name": "monitor_xWorld",
+              "expr": "$.monitor.xWorld"
+            },
+            {
+              "type": "path",
+              "name": "monitor_yLocality",
+              "expr": "$.monitor.yLocality"
+            },
+            {
+              "type": "path",
+              "name": "monitor_yWorld",
+              "expr": "$.monitor.yWorld"
+            },
+            {
+              "type": "path",
+              "name": "monitor_yawAngle",
+              "expr": "$.monitor.yawAngle"
+            },
+            {
+              "type": "path",
+              "name": "monitor_year",
+              "expr": "$.monitor.year"
+            }
+          ]
+        }
+      }
+    },
+    "metricsSpec": [
+      {
+        "name": "count",
+        "type": "count"
+      }
+    ]
+  }
+}

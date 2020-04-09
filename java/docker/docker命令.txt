@@ -221,6 +221,7 @@ docker run -it --name redis -p 6379:6379 --restart always  --privileged=true -d 
 
 14.运行mysql并执行客服端
 docker run -p 3306:3306 --name mysql-test -e MYSQL_ROOT_PASSWORD=123456 -d mysql:8.0.13
+docker run -it -p 3306:3306 --name=mysql.8  --restart always --privileged=true  -e MYSQL_ROOT_PASSWORD=123456  mysql:8 -d
 -e MYSQL_ROOT_PASSWORD=123456：初始化 root 用户的密码
 docker exec -it mysql-test mysql -uroot -p123456  进入mysql客服端
 docker exec -it mysql-test mysql bash  进入mysql所在容器
@@ -400,6 +401,36 @@ docker container update --restart=always 容器名字
 docker stats
 
 ***************************************************************************************
+
+docker容器、镜像导入导出
+
+容器导出:
+docker export  cid -d  fileName.tar
+容器导入:
+docker import  fileName.tar cName:v1.0.0
+
+镜像导出:
+docker save -o  jdk.tar imageId
+镜像导入：
+docker load -i jdk.tar
+
+使用导出的容器文件运行容器时，需要带上commands参数，不然报错：
+docker run -it --rm --name mysql-gms -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 -d  mysql:8 docker-entrypoint.sh mysqld
+使用docker ps --no-trunc查看commands参数
+
+
+***************************************************************************************
+
+镜像重命名:
+docker tag f8146facf376 openjdk:8
+
+***************************************************************************************
+
+查看容器的运行命令(commands参数):
+docker ps --no-trunc
+
+***************************************************************************************
+
 Dockerfile文件详解(https://www.cnblogs.com/panwenbin-logs/p/8007348.html)
 
 FROM           使用镜像构建容器     #FROM openjdk:8

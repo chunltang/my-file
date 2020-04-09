@@ -1,0 +1,23 @@
+1.jackson注解大全
+https://blog.csdn.net/sdyy321/article/details/40298081
+
+
+2.list，map集合实体转换
+ObjectMapper mapper = new ObjectMapper();
+JavaType jt = mapper.getTypeFactory().constructParametricType(collect, target);
+return mapper.readValue(json, jt);
+
+
+3.@JsonCreator使用
+
+指定JSON转对象：
+有多个属性时使用@JsonProperty指定输入
+    @JsonCreator
+    public static DateFormatEnum getInstance(@JsonProperty("value") String value){
+        for (DateFormatEnum anEnum : DateFormatEnum.values()) {
+            if(anEnum.getValue().equals(value)){
+                return anEnum;
+            }
+        }
+        return null;
+    }

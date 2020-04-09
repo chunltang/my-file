@@ -1,0 +1,2 @@
+1.https://blog.csdn.net/hlz5857475/article/details/92671946
+maven构建多模块项目依赖问题——dependencyManagement、dependencies (这里容易出现很多坑)

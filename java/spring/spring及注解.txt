@@ -16,9 +16,6 @@ spring：
 @RestControllerAdvice
 springboot用RestControllerAdvice(ControllerAdvice)拦截异常并统一处理
 
-@Order
-注解主要用来控制配置类的加载顺序
-
 @ExceptionHandler(BindException.class)
 表示拦截指定异常类
 
@@ -145,10 +142,23 @@ bean的生命周期：
 @DependsOn
 指定bean初始化前先要初始化其他bean
 如@DependsOn(value = {"springContextUtil","rabbitTemplate"}) 可以指定多个
+@DependsOn注解可以用来控制bean的创建顺序，该注解用于声明当前bean依赖于另外一个bean。所依赖的bean会被容器确保在当前bean实例化之前被实例化。
+一般用在一个bean没有通过属性或者构造函数参数显式依赖另外一个bean，但实际上会使用到那个bean或者那个bean产生的某些结果的情况。
 
+@Order
+注解主要用来控制配置类的加载顺序，不是bean的加载顺序
+和@configure一起上用
 
 InitializingBean接口：
 可以指定初始化装配bean的属性后，做某些操作，如执行其他事或者给当前bean添加修改属性
+
+----------------------------------------------------------------------------------------------------------------------------
+
+@Resource("beanName")
+指定注入bean名称注入
+
+@Qualifier("beanName")
+指定那个bean名称注入，配合@Autowired，可以使用@Resource替换
 
 ----------------------------------------------------------------------------------------------------------------------------
 
@@ -156,7 +166,7 @@ servlet：
 @PostConstruct
 该注解被用来修饰一个非静态的void（）方法。被@PostConstruct修饰的方法会在服务器加载Servlet的时候运行，并且只会被服务器执行一次。PostConstruct在构造函数之后执行，init（）方法之前执行。
 通常我们会是在Spring框架中使用到@PostConstruct注解 该注解的方法在整个Bean初始化中的执行顺序：
-Constructor(构造方法) -> @Autowired(依赖注入) -> @PostConstruct(注释的方法)
+Constructor(构造方法) -> @Autowired和@Resource(依赖注入) -> @PostConstruct(注释的方法)
 
 
 ----------------------------------------------------------------------------------------------------------------------------

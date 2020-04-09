@@ -1,3 +1,79 @@
+https://blog.csdn.net/zhaohui756752254/article/details/81008288
+mysql字段设值区分大小写：
+修改为binary类型：
+ALTER TABLE sys_user_copy1 MODIFY COLUMN `USERNAME` VARCHAR(50) binary; 
+
+***************************************************************************************************************
+
+--修改表的列属性名
+alter table 表名 change 原列名 新列名  类型； 
+
+ --修改表的类类型
+alter table 表名 modify 列名 类型； 
+
+--删除表的某一列
+alter table 表名 drop 列名；
+
+--添加某一列  
+alter table 表名 add  列名 类型；
+
+--修改表名
+alter table 表名 rename 新表名； 
+
+按月统计:
+select date_format(create_time, '%Y-%m') mont, count(*) coun
+from t_content
+group by date_format(create_time, '%Y-%m');
+
+按天统计:
+select date_format(create_time, '%Y-%m-%d') dat, count(*) coun
+from t_content
+group by date_format(create_time, '%Y-%m-%d');
+
+时间戳转换为时间
+select from_unixtime(create_time / 1000, '%Y-%m-%d') dat, count(*) coun
+from t_content
+group by from_unixtime(create_time / 1000, '%Y-%m-%d');
+
+select from_unixtime(1454767890,'%Y-%m-%d');
+
+时间转时间戳：
+select unix_timestamp(now());
+select from_unixtime((select unix_timestamp(now())),'%Y-%m-%d');
+
+查询为空返回0：
+IFNULL(expr1, 0)
+
+***************************************************************************************************************
+
+mysql导出数据：mysqldump
+（https://blog.csdn.net/muriyue6/article/details/82848358）
+（http://www.yinxi.net/zt/show.php?ztID=11215）
+docker exec -it 8c459c071087  mysqldump -uroot -p123456 gms_base > demo.sql            导出gms_base数据库
+docker exec -it 8c459c071087  mysqldump --opt -t -uroot -p123456 gms_base > demo2.sql  使用mysqldump只导出数据不导出表结构
+docker exec -it mysql01 mysqldump --opt -d -uroot -proot demo > /home/bak/demo1.sql    使用mysqldump只导出表结构不导出数据
+docker exec -it 8c459c071087 mysqldump -uroot -p123456 --default-character-set=utf8  gms_base sys_user_log > userlog.sql  指定表导出
+docker exec -it 8c459c071087  mysqldump -uroot -p123456 -d  -B mysql gms_base  > demo.sql  
+-d:只导出结构
+-B d1 d2 指定导出多个数据库
+-A 导出所有数据库
+--default-character-set=utf8  指定导出编码类型
+
+数据库中执行set names utf8; 设置数据库编码
+在数据库中使用source命令导入sql文件
+
+导入数据时报错：
+ERROR 1231 (42000): Variable 'character_set_client' can't be set to the value of 'NULL'
+1.mysql设置导入文件大小的限制：
+(https://blog.csdn.net/yabingshi_tech/article/details/52813855)
+set global max_allowed_packet = 2*1024*1024*10;
+2.打开sql文件，删除这几行：
+(https://stackoverflow.com/questions/29112716/mysql-error-1231-42000variable-character-set-client-cant-be-set-to-the-val)
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+***************************************************************************************************************
 
 -- 将id列设置为主键
 ALTER TABLE index_demo ADD PRIMARY KEY(id) ;
