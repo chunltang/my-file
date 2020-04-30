@@ -1,0 +1,91 @@
+
+#打包所有镜像
+docker save gms-web:latest -o             gms-web:latest.tar &&
+docker save gms-map:latest -o             gms-map:latest.tar &&
+docker save gms-dispatch:latest -o        gms-dispatch:latest.tar &&
+docker save gms-communication:latest -o   gms-communication:latest.tar &&
+docker save gms-business:latest -o  gms-business:latest.tar &&
+docker save gms-redis:3.2 -o              gms-redis:3.2.tar &&
+docker save gms-rabbitmq:3.8.2 -o         gms-rabbitmq:3.8.2.tar &&
+docker save gms-mysql:3.0.18 -o           gms-mysql:3.0.18.tar &&
+docker save gms-nginx:1.17.9 -o           gms-nginx:1.17.9.tar &&
+docker save gms-jdk:8 -o                  gms-jdk:8.tar &&
+docker save gms-centos:7 -o               gms-centos:7.tar
+
+
+
+
+#加载所有镜像
+docker load -i gms-web:latest.tar &&
+docker load -i gms-map:latest.tar &&
+docker load -i gms-business:latest.tar &&
+docker load -i gms-dispatch:latest.tar &&
+docker load -i gms-communication:latest.tar &&
+docker load -i gms-redis:3.2.tar &&
+docker load -i gms-rabbitmq:3.8.2.tar &&
+docker load -i gms-mysql:8.0.18.tar &&
+docker load -i gms-nginx:1.17.9.tar &&
+docker load -i gms-jdk:8.tar &&
+docker load -i gms-centos:7.tar 
+
+
+
+#运行所有容器
+echo "create rabbitmq"
+docker run -i --privileged=true --name=gms-rabbitmq --net gms-network --ip 172.18.0.2 -p 5672:5672 -p 15672:15672 --restart=always  -v /gms-files/data/rabbitmq:/var/lib/rabbitmq -d  gms-rabbitmq:3.8.2 
+sleep 5 
+echo "rabbitmq add user gms"
+docker exec -i gms-rabbitmq rabbitmqctl add_user gms 123456 
+docker exec -i gms-rabbitmq rabbitmqctl set_user_tags gms  administrator  
+docker exec -i gms-rabbitmq rabbitmqctl  set_permissions  -p  '/' gms  '.' '.' '.' 
+echo "create redis"
+docker run -i --privileged=true --name=gms-redis -p 6379:6379 --restart=always  -v /gms-files/data/redis:/data -d  --net gms-network --ip 172.18.0.3 gms-redis:3.2 redis-server --appendonly yes 
+echo "create mysql"
+docker run -i --privileged=true --name=gms-mysql -p 3306:3306 --net gms-network --ip 172.18.0.4 --restart=always -e MYSQL_ROOT_PASSWORD=123456  -v /gms-files/data/mysql:/var/lib/mysql  -d  gms-mysql:8.0.18 
+echo "create dispatch"
+docker run -i --name=gms-dispatch --restart=always --privileged=true --net gms-network --ip 172.18.0.6 -v /gms-files/dispatch-service:/app -d gms-dispatch:latest /app/GmsDispatchServer 
+echo "create web"
+docker run -i --name=gms-web --privileged=true --net gms-network --ip 172.18.0.10 -v  /gms-files/web-service:/app  -p 8001:8001 -p 8002:8002  -d  gms-web:latest 
+echo "create business"
+docker run -i --name=gms-business --privileged=true --restart=always --net gms-network --ip 172.18.0.5 -p  8080:8080 -v /gms-files/business-service:/app  -d gms-business:latest 
+echo "create communication"
+docker run -i --name=gms-communication --privileged=true --net gms-network --ip 172.18.0.8 -v  /gms-files/communication-service:/app  -d  gms-communication:latest /app/VehicleCtrUdp 
+echo "create map"
+docker run -i --name=gms-map --restart=always --privileged=true --net gms-network --ip 172.18.0.7 -v /gms-files/map-service:/app -d gms-map:latest 
+sleep 5 
+echo "start map"
+docker exec -i gms-map /app/start.sh &
+
+
+#rabbitmq添加用户
+docker exec -it gms-rabbitmq rabbitmqctl add_user gms 123456 &&
+docker exec -it gms-rabbitmq rabbitmqctl set_user_tags gms  administrator  &&
+docker exec -it gms-rabbitmq rabbitmqctl  set_permissions  -p  '/' gms  '.' '.' '.'
+
+#rabbitmq命令行
+添加用户：rabbitmqctl  add_user username password
+列出所有用户：rabbitmqctl list_users
+删除用户：rabbitmqctl  delete_user username
+清除用户权限：rabbitmqctl  clear_permissions  -p  vhostpath  username
+列出用户权限：rabbitmqctl  list_user_permissions username
+修改密码：rabbitmqctl  change_password  username  newpassword
+设置用户权限：rabbitmqctl  set_permissions  -p  vhostpath  username  ".*"  ".*"  ".*"
+创建虚拟主机: rabbitmqctl add_vhost vhostpath
+列出所以虚拟主机: rabbitmqctl list_vhosts
+列出虚拟主机上的所有权限: rabbitmqctl list_permissions -p vhostpath
+删除虚拟主机: rabbitmqctl delete_vhost vhost vhostpath
+移除所有数据，要在 rabbitmqctl stop_app 之后使用: rabbitmqctl reset
+组成集群命令: rabbitmqctl join_cluster <clusternode> [--ram]
+查看集群状态: rabbitmqctl cluster_status
+修改集群节点的存储形式: rabbitmqctl change_cluster_node_type disc | ram
+摘除节点：rabbitmqctl   forget_cluster_node  [--offline]  
+修改节点名称：rabbitmqctl  rename_cluster_node   oldnode1  newnode1  [oldnode2  newnode2]  [oldnode3  newnode3...]
+
+#命令行创建队列
+https://blog.csdn.net/zhwyj1019/article/details/89354439
+rabbitmqctl eval 'rabbit_exchange:declare({resource, <<"/">>, exchange, <<"test-topic">>}, topic, true, false, false, []，"").'
+rabbitmqctl eval 'rabbit_amqqueue:declare({resource, <<"/">>, queue, <<"test-queue">>}, true, false, [], none, "节点地址").'
+rabbitmqctl eval 'rabbit_binding:add({binding, {resource, <<"/">>, exchange, <<"test-topic">>}, <<"*.com.cn">>, {resource, <<"/">>, queue, <<"test-queue">>}, []},"").'
+
+#启动底图
+docker exec -it gms-map /app/start.sh &

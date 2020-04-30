@@ -1,4 +1,25 @@
-﻿docker相关
+1.Docker 修改Docker0网桥默认网段
+https://blog.csdn.net/zhuchunyan_aijia/article/details/87076108?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3
+
+2.docker常用命令
+https://www.yiibai.com/docker/plugin_rename.html
+
+3.一键部署:
+https://blog.csdn.net/jccodecode/article/details/100129414
+
+4.docker教程
+http://c.biancheng.net/view/3197.html
+***************************************************************************************
+容器内安装命令：
+ubantu:
+apt-get update
+apt-get install inetutils-ping  安装ping
+
+centos：
+yum install -y iputils 安装ping
+***************************************************************************************
+
+docker相关
 
 systemctl start docker		启动 docker
 systemctl status docker		查看 docker 状态
@@ -6,6 +27,19 @@ systemctl stop docker		停止 docker
 systemctl enable docker		开机自启
 docker info 			查看 docker 概要信息
 docker --help			查看 docker 帮助文档
+
+
+显示指定容器IP地址：
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 1f6ed3779bba
+
+显示所有容器IP地址：
+docker inspect --format='{{.Name}} - {{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -aq)
+
+列出所有容器对应的名称，端口，及ip:
+docker inspect -f='{{.Name}} {{.NetworkSettings.IPAddress}} {{.HostConfig.PortBindings}}' $(docker ps -aq)
+
+查看docker name：
+docker inspect -f='{{.Name}}' $(sudo docker ps -a -q)
 
 ***************************************************************************************
 
@@ -238,10 +272,16 @@ docker exec -it 8c459c071087  mysqldump --opt -t -uroot -p123456 gms_base > demo
 docker exec -it mysql01 mysqldump --opt -d -uroot -proot demo > /home/bak/demo1.sql    使用mysqldump只导出表结构不导出数据
 docker exec -it 8c459c071087 mysqldump -uroot -p123456 --default-character-set=utf8  gms_base sys_user_log > userlog.sql  指定表导出
 docker exec -it 8c459c071087  mysqldump -uroot -p123456 -d  -B mysql gms_base  > demo.sql  
+docker exec -it 8c459c071087 mysqldump -uroot -p123456 --default-character-set=utf8  gms_base --tables sys_menu sys_role_menu sys_user_role sys_role t_mineral > gms_base_sometable_0413.sql  指定多个表导出
+--opt:默认只导出数据
 -d:只导出结构
+-t:只导出数据
 -B d1 d2 指定导出多个数据库
 -A 导出所有数据库
 --default-character-set=utf8  指定导出编码类型
+--tables  指定导出表名
+--database 指定数据库名
+--ignore-table  指定忽略表，可以使用多次
 
 数据库中执行set names utf8; 设置数据库编码
 在数据库中使用source命令导入sql文件
@@ -265,6 +305,9 @@ docker run -d --name=rabbitmq-test -p 15672:15672 -p 5672:5672 rabbitmq:manageme
 
 进入docker的mq容器执行，安装web管理页面插件
 --rabbitmq-plugins enable rabbitmq_management  
+
+rabbirmq查看版本：
+rabbitmqctl status|grep version
 
 ***************************************************************************************
 
@@ -317,14 +360,30 @@ docker load -i mynginx.tar
 ***************************************************************************************
 
 18.Dockerfile
+创建镜像：
+docker build -f /gms-files/map-service/Dockerfile -t gms-map:1.0.0 .
+-f 指定Dockerfile文件路径
+-t 指定镜像名称和tag
+.  表示build上下文件的根目录，在使用ADD/COPY命令时，如果不用WORKDIR命令切换工作目录，则默认使用根目录
 
 FROM image_name：tag  定义了使用哪儿个基础镜像启动构建流程
 MAINTAINER user_name	声明镜像的创建者
 ENV key value		设置环境变量(可以写多条)
 RUN command 		是 Dockerfile 的核心部分(可以写多条)
-ADD source_dir/file dest_dir/file  将宿主机的文件复制到容器内，如果是一个压缩文件，将会在复制后自动解压
+ADD source_dir/file dest_dir/file  将宿主机的文件复制到容器内，如果是一个压缩文件，将会在复制后自动解压，多个相关命令使用&&连接
 COPY source_dir/file dest_dir/file   和 ADD 相似，但是如果有压缩文件并不能解压
 WORDIR path_dir 设置工作目录
+EXPOSE 8080 暴露端口
+
+ENTRYPOINT ["java","-jar","/app/app.jar"]  CMD和ENTRYPOINT指令都是用来指定容器启动时运行的命令，ENTRYPOINT总是会被执行，CMD命令可以通过启动命令覆盖，容器启动必须指定其中一个命令，不然报错
+CMD ["executable","param1","param2"]    // 这是 exec 模式的写法，注意需要使用双引号。
+CMD command param1 param2               // 这是 shell 模式的写法。两种形式CMD，都可以通过容器启动时设置的命令覆盖CMD
+同时使用 CMD 和 ENTRYPOINT 的情况
+对于 CMD 和 ENTRYPOINT 的设计而言，多数情况下它们应该是单独使用的。当然，有一个例外是 CMD 为 ENTRYPOINT 提供默认的可选参数。
+我们大概可以总结出下面几条规律：
+    • 如果 ENTRYPOINT 使用了 shell 模式，CMD 指令会被忽略。
+    • 如果 ENTRYPOINT 使用了 exec 模式，CMD 指定的内容被追加为 ENTRYPOINT 指定命令的参数。
+    • 如果 ENTRYPOINT 使用了 exec 模式，CMD 也应该使用 exec 模式。
 
 ***************************************************************************************
 
@@ -376,6 +435,7 @@ docker system df
 
 查看挂载目录：
 docker inspect 6836b2acfb6a |grep Volumes -A 10
+docker inspect jenkins_docker | grep Mounts -A 20
 
 ***************************************************************************************
 
@@ -405,7 +465,7 @@ docker stats
 docker容器、镜像导入导出
 
 容器导出:
-docker export  cid -d  fileName.tar
+docker export  cid -o  fileName.tar
 容器导入:
 docker import  fileName.tar cName:v1.0.0
 
@@ -414,10 +474,28 @@ docker save -o  jdk.tar imageId
 镜像导入：
 docker load -i jdk.tar
 
+将容器保存为镜像：
+docker commit cid imageName
+
 使用导出的容器文件运行容器时，需要带上commands参数，不然报错：
 docker run -it --rm --name mysql-gms -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 -d  mysql:8 docker-entrypoint.sh mysqld
 使用docker ps --no-trunc查看commands参数
 
+
+***************************************************************************************
+
+docker容器网路：
+
+显示所有容器网路类型：
+docker network ls
+
+容器通信：
+http://www.iamlintao.com/6700.html
+
+docker network create --subnet=172.18.0.0/16 gms-network
+
+启动 Docker的时候，用 --network 参数，可以指定网络类型和ip，如：
+docker run -itd --name test1 --network gms-network --ip 172.17.0.10 centos:latest/bin/bash
 
 ***************************************************************************************
 

@@ -7,8 +7,20 @@
 5.gem install redis-dump -V
 进行到这步的时候会报错，解决办法可以参考https://blog.csdn.net/qq_35981283/article/details/80454351或者https://blog.csdn.net/fengye_yulu/article/details/77628094
 
+测试成功的连接：
+https://www.cnblogs.com/66li/p/11759514.html
 
-作者：96ebc997d5c4
-链接：https://www.jianshu.com/p/6dfc04d6c0d7
-来源：简书
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+2.ubuntu安装redis-dump
+apt-get install ruby ruby-dev gcc
+gem install redis-dump
+
+redis-dump -u 192.168.2.100:6379 > redis.json
+
+< test.json redis-load –u 192.168.2.114:6379
+< test.json redis-load -u 192.168.0.31
+ERROR (Yajl::ParseError): lexical error: invalid bytes in UTF8 string.
+          lue":{"maxInactiveInterval":"¬웵0000\u0005sr\u0000\u0011jav
+                     (right here) ------^
+#如上报错可加参数 -n，不检查 utf-8格式
+< redis.json redis-load -n -u 192.168.2.114:6379

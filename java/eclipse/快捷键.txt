@@ -1,0 +1,9 @@
+1.设置自动补全
+https://blog.csdn.net/shaun_guo/article/details/79122749
+
+2.设置编码
+general-content types-text-java source file
+general-workspace-txt file encoding
+
+3.设置字体
+general-appearance-colors and fonts-basic-text font

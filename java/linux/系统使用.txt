@@ -1,0 +1,5 @@
+1.ubuntu设置root密码，及允许root远程登录
+修改密码:
+sudo passwd root
+设置允许远程登录:
+https://www.cnblogs.com/SofuBlue/p/9075491.html
