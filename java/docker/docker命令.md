@@ -1,34 +1,39 @@
-1.Docker 修改Docker0网桥默认网段
+#  docker命令
+
+## Docker 修改Docker0网桥默认网段
+```
 https://blog.csdn.net/zhuchunyan_aijia/article/details/87076108?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-3
-
-2.docker常用命令
+```
+## docker常用命令
+```
 https://www.yiibai.com/docker/plugin_rename.html
+```
 
-3.一键部署:
+## 一键部署
+```
 https://blog.csdn.net/jccodecode/article/details/100129414
-
-4.docker教程
+```
+## docker教程
+```
 http://c.biancheng.net/view/3197.html
-***************************************************************************************
-容器内安装命令：
+```
+## 容器内安装命令
+```
 ubantu:
 apt-get update
 apt-get install inetutils-ping  安装ping
 
 centos：
 yum install -y iputils 安装ping
-***************************************************************************************
-
-docker相关
-
+```
+## docker相关
+```
 systemctl start docker		启动 docker
 systemctl status docker		查看 docker 状态
 systemctl stop docker		停止 docker
 systemctl enable docker		开机自启
 docker info 			查看 docker 概要信息
 docker --help			查看 docker 帮助文档
-
-
 显示指定容器IP地址：
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 1f6ed3779bba
 
@@ -40,11 +45,10 @@ docker inspect -f='{{.Name}} {{.NetworkSettings.IPAddress}} {{.HostConfig.PortBi
 
 查看docker name：
 docker inspect -f='{{.Name}}' $(sudo docker ps -a -q)
+```
 
-***************************************************************************************
-
-1.运行镜像
-
+## 运行镜像
+```
 一键生成镜像、容器：
 docker build -t gms-1.0.1 . && docker images |grep "gms-1.0.1" |awk '{print $2}'|xargs -I {}  docker run -itd -p 8081:8081 --name=gms-1.0.1 --restart=always {}
 
@@ -56,6 +60,14 @@ ADD gms-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","app.jar"]
 
+docker run -it -p 8080:8080 --name=gms-1.0  --resart=always --privileged=true  976f5bb67fcb -d
+docker logs -f  976f5bb67fcb  #查看实时运行日志
+docker run hello-world
+docker run ubuntu:15.10 /bin/echo "Hello world"
+docker run +容器名称 +在容器中执行的命令
+```
+## java JVM参数
+```
 java -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=128m -Xms1024m -Xmx1024m -Xmn256m -Xss256k -XX:SurvivorRatio=8 -XX:+UseConcMarkSweepGC -jar /jar包路径 
 -XX:MetaspaceSize=128m （元空间默认大小）
 -XX:MaxMetaspaceSize=128m （元空间最大大小）
@@ -65,21 +77,9 @@ java -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=128m -Xms1024m -Xmx1024m -Xmn25
 -Xss256k （棧最大深度大小）
 -XX:SurvivorRatio=8 （新生代分区比例 8:2）
 -XX:+UseConcMarkSweepGC （指定使用的垃圾收集器，这里使用CMS收集器）
-
-docker run -it -p 8080:8080 --name=gms-1.0  --resart=always --privileged=true  976f5bb67fcb -d
-
-docker logs -f  976f5bb67fcb  #查看实时运行日志
-
-docker run hello-world
-
-docker run ubuntu:15.10 /bin/echo "Hello world"
-
-docker run +容器名称 +在容器中执行的命令
-
-***************************************************************************************
-
-2.参数详解
-
+```
+## run参数详解
+```
 a.进入容器
 我们通过docker的两个参数 -i -t，让docker运行的容器实现"对话"的能力
 docker run -i -t ubuntu:15.10 /bin/bash
@@ -135,75 +135,51 @@ docker run -i -t ubuntu:15.10 /bin/bash
 --link=[]: 添加链接到另一个容器；
 --expose=[]: 开放一个端口或一组端口；
 --volume , -v: 绑定一个卷
+```
 
-***************************************************************************************
-
-3.启动容器（后台模式）
+## 容器命令
+```
 docker run -d ubuntu:15.10 /bin/sh -c "while true; do echo hello world; sleep 1; done"
-
-
-
-***************************************************************************************
-
 4.在容器内使用docker logs命令，查看容器内的标准输出
-
-***************************************************************************************
-
 5.停止容器
-
 docker stop containerID
-
 已经停止的容器，我们可以使用命令 docker start 来启动
-
 docker start ID
-
 docker restart ID
-
 docker stop $(docker ps -a -q)   停止所有容器
-
-***************************************************************************************
-
-6.查看docker客户端命令
-
+```
+## 查看docker客户端命令
+```
 docker  所有命令
 docker command --help   命令详细使用
 docker-current run --help   查看--参数的使用
-
-***************************************************************************************
-
-7.查看特定容器的端口映射
-
+```
+## 查看特定容器的端口映射
+```
 docker port ID
-
-***************************************************************************************
-
-8.可以查看容器内部的标准输出
-
+```
+## 可以查看容器内部的标准输出
+```
 docker logs [-f] ID 
 -f: 让 docker logs 像使用 tail -f 一样来输出容器内部的标准输出
+```
 
-***************************************************************************************
-
-9.查看WEB应用程序容器的进程
-
+## 查看WEB应用程序容器的进程
+```
 docker top ID
-
-***************************************************************************************
-
-10.使用 docker inspect 来查看 Docker 的底层信息。它会返回一个 JSON 文件记录着 Docker 容器的配置和状态信息
-
+```
+## inspect
+```
+使用 docker inspect 来查看 Docker 的底层信息。它会返回一个 JSON 文件记录着 Docker 容器的配置和状态信息
 docker inspect ID
-
-***************************************************************************************
-
-11.移除WEB应用容器
-
+```
+## 移除容器
+```
 docker rm ID                 移除容器必须是停止状态，否则会报错
 docker rm `docker ps -a -q`  删除所有容器
-
-***************************************************************************************
-
-12.容器查看
+```
+## 容器查看
+```
 docker ps -a    查看所有容器
 docker ps       查看运行容器
 docker ps -l    最近创建的容器
@@ -212,10 +188,9 @@ docker ps -l                          查看最后一次运行的容器：
 docker ps -f status=exited            查看停止的容器
 docker inspect 容器名称(容器 ID )     查看容器 IP
 docker inspect --format='{{NetworkSetting。IPAddress}}' 容器名称(容器 ID)    也可以直接输出 IP 地址
-
-***************************************************************************************
-
-13.运行redis容器并使用
+```
+## 运行redis容器并使用
+```
 docker run -p 6379:6379 --name redis-test  -d redis:3.2 redis-server --appendonly yes
 redis-server --appendonly yes : 在容器执行redis-server启动命令，并打开redis持久化配置
 使用redis镜像执行redis-cli命令连接到刚启动的容器
@@ -251,9 +226,10 @@ config set notify-keyspace-events "E$"   #监听字符串的操作事件
 在终端输入：PSUBSCRIBE __keyevent@0__:set   #发布事件
 
 docker run -it --name redis -p 6379:6379 --restart always  --privileged=true -d redis:3.2  redis-cli config set notify-keyspace-events "E$"
-***************************************************************************************
+```
 
-14.运行mysql并执行客服端
+## 运行mysql并执行客服端
+```
 docker run -p 3306:3306 --name mysql-test -e MYSQL_ROOT_PASSWORD=123456 -d mysql:8.0.13
 docker run -it -p 3306:3306 --name=mysql.8  --restart always --privileged=true  -e MYSQL_ROOT_PASSWORD=123456  mysql:8 -d
 -e MYSQL_ROOT_PASSWORD=123456：初始化 root 用户的密码
@@ -297,9 +273,10 @@ set global max_allowed_packet = 2*1024*1024*10;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
-***************************************************************************************
+```
 
-15.rabbitmq运行并创建用户、密码
+## rabbitmq运行并创建用户、密码
+```
 docker run -d --hostname rabbit-host --name rabbitmq -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=password -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 docker run -d --name=rabbitmq-test -p 15672:15672 -p 5672:5672 rabbitmq:management  需要映射5672端口，不然访问被拒绝
 
@@ -309,9 +286,11 @@ docker run -d --name=rabbitmq-test -p 15672:15672 -p 5672:5672 rabbitmq:manageme
 rabbirmq查看版本：
 rabbitmqctl status|grep version
 
-***************************************************************************************
+```
 
-安装ssh（https://blog.csdn.net/gesanghuakaisunshine/article/details/79395400）
+## 安装ssh
+```
+（https://blog.csdn.net/gesanghuakaisunshine/article/details/79395400）
 docker pull dockerbase/openssh-server
 查看ssh状态：
 /etc/init.d/ssh status
@@ -323,30 +302,27 @@ The authenticity of host 'localhost (127.0.0.1)' can't be established的处理�
 追加：StrictHostKeyChecking no
          UserKnownHostsFile /dev/null
 
-***************************************************************************************
-
-docker安装druid
-
+```
+## docker安装druid
+```
 docker pull druidio/example-cluster
 docker run --rm -i -p 3000:8082 -p 3001:8081 druidio/example-cluster
-
 报Not enough direct memory.  Please adjust -XX:MaxDirectMemorySize, druid.processing.numThreads, druid.processing.numThreads, or druid.processing.numMergeBuffers: maxDirectMemory[1,011,351,552], memoryNeeded[2,617,245,696] = druid.processing.buffer.sizeBytes[67,108,864] * (druid.processing.numMergeBuffers[7] + druid.processing.numThreads[31] + 1)
 处理：修改容器/etc/supervisor/conf.d/supervisord.conf的配置，调小druid.processing.numThreads或者druid.processing.buffer.sizeBytes，容器中的文件可以拷贝到容器外修改
+```
 
-***************************************************************************************
-
-16.文件拷贝
-
+## 文件拷贝
+```
 将文件拷贝到容器内
 docker cp 需要拷贝的文件或目录  容器名称：容器目录
 
 将文件从容器内拷贝出来
 docker cp 容器名称：容器目录	需要拷贝的文件或目录
 
-***************************************************************************************
+```
 
-17.迁移与备份
-
+## 迁移与备份
+```
 容器保存为镜像：
 docker commit 容器名称 镜像名称
 docker commit mynginx mynginx_i
@@ -356,10 +332,10 @@ docker save -o mynginx.tar mynginx_i
 
 镜像恢复与迁移：-i 输入的文件，例：
 docker load -i mynginx.tar
+```
 
-***************************************************************************************
-
-18.Dockerfile
+## Dockerfile
+```
 创建镜像：
 docker build -f /gms-files/map-service/Dockerfile -t gms-map:1.0.0 .
 -f 指定Dockerfile文件路径
@@ -385,10 +361,10 @@ CMD command param1 param2               // 这是 shell 模式的写法。两种
     • 如果 ENTRYPOINT 使用了 exec 模式，CMD 指定的内容被追加为 ENTRYPOINT 指定命令的参数。
     • 如果 ENTRYPOINT 使用了 exec 模式，CMD 也应该使用 exec 模式。
 
-***************************************************************************************
+```
 
-19.docker中安装vi命令
-
+## docker中安装vi命令
+```
 依次运行：apt-get update |  apt-get install vi
 apt-get update，这个命令的作用是：同步 /etc/apt/sources.list 和 /etc/apt/sources.list.d 中列出的源的索引，这样才能获取到最新的软件包
 
@@ -400,19 +376,16 @@ deb http://mirrors.163.com/debian/ jessie main non-free contrib
 deb http://mirrors.163.com/debian/ jessie-proposed-updates main non-free 
 deb-src http://mirrors.163.com/debian/ jessie main non-free contrib
 deb-src http://mirrors.163.com/debian/ jessie-proposed-updates main non-free contrib
-
-***************************************************************************************
-20.zookeeper
-
+```
+## zookeeper
+```
 docker run --name zk-test  -p 2181:2181 -p 2888:2888 -p 3888:3888  -p 2182:2182 -p 2889:2889 -p 3889:3889 -p 2183:2183 -p 2890:2890 -p 3890:3890 --restart always -d zookeeper
 
 docker run -it --rm --link zk-test:zookeeper zookeeper zkCli.sh -server zookeeper 运行zk客户端
+```
 
-
-***************************************************************************************
-
-21.docker的vim不能右键复制
-
+## docker的vim不能右键复制
+```
 右键不能粘贴，反而进入了visual模式，
 修改方法：
 vim /usr/share/vim/vim81/defaults.vim
@@ -422,48 +395,38 @@ vim /usr/share/vim/vim81/defaults.vim
 if has('mouse')
 set mouse-=a
 endif
+```
 
-***************************************************************************************
-
-22.查看docker相关统计(镜像，容器，卷占用)
-
+## 查看docker相关统计(镜像，容器，卷占用)
+```
 docker system df
-
-***************************************************************************************
-
-23.docker inspect : 获取容器/镜像的元数据
-
+docker inspect : 获取容器/镜像的元数据
 查看挂载目录：
 docker inspect 6836b2acfb6a |grep Volumes -A 10
 docker inspect jenkins_docker | grep Mounts -A 20
-
-***************************************************************************************
-
-top命令：
-
+```
+## top命令
+```
 docker top cid
 查看所有运行容器的进程信息：
 for i in  `docker ps |grep Up|awk '{print $1}'`;do echo \ &&docker top $i; done
+```
 
-***************************************************************************************
-
-修改容器启动配置参数：
-
+## 修改容器启动配置参数
+```
 1.命令修改
 docker container update --restart=always 容器名字
 
 2.直接改配置文件 （https://www.cnblogs.com/Zfc-Cjk/p/10851847.html）
+```
 
-***************************************************************************************
-
-查看所有容器CPU使用状态：
-
+## 查看所有容器CPU使用状态：
+```
 docker stats
+```
 
-***************************************************************************************
-
-docker容器、镜像导入导出
-
+## docker容器、镜像导入导出
+```
 容器导出:
 docker export  cid -o  fileName.tar
 容器导入:
@@ -480,46 +443,47 @@ docker commit cid imageName
 使用导出的容器文件运行容器时，需要带上commands参数，不然报错：
 docker run -it --rm --name mysql-gms -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 -d  mysql:8 docker-entrypoint.sh mysqld
 使用docker ps --no-trunc查看commands参数
+```
 
-
-***************************************************************************************
-
-docker容器网路：
-
+## docker容器网路
+```
 显示所有容器网路类型：
+查看网路和网路id
 docker network ls
+查看网路详细信息
+docker network inspect id
 
 容器通信：
 http://www.iamlintao.com/6700.html
-
+创建网路：
 docker network create --subnet=172.18.0.0/16 gms-network
 
 启动 Docker的时候，用 --network 参数，可以指定网络类型和ip，如：
 docker run -itd --name test1 --network gms-network --ip 172.17.0.10 centos:latest/bin/bash
+```
 
-***************************************************************************************
-
-镜像重命名:
+## 镜像重命名
+```
 docker tag f8146facf376 openjdk:8
+```
 
-***************************************************************************************
-
-查看容器的运行命令(commands参数):
+## 查看容器的运行命令(commands参数)
+```
 docker ps --no-trunc
+```
 
-***************************************************************************************
-
-Dockerfile文件详解(https://www.cnblogs.com/panwenbin-logs/p/8007348.html)
-
+## Dockerfile文件详解
+```
+(https://www.cnblogs.com/panwenbin-logs/p/8007348.html)
 FROM           使用镜像构建容器     #FROM openjdk:8
 ENV              添加环境变量   #eENV a 10  \ ENV b 20  可以写多个,在容器中使用env命令查看，用$a 使用环境变量
 EXPOSE        暴露端口   #EXPOSE 8080
 ADD             复制文件到容器    #ADD a.jar  app.jar
+```
 
-***************************************************************************************
-
-docker容器时间与主机时间不一致（https://www.cnblogs.com/okong/p/docker-time-diff.html）
-
+## docker容器时间与主机时间不一致
+```
+（https://www.cnblogs.com/okong/p/docker-time-diff.html）
 1.docker cp /etc/localtime 500b725eacea:/etc/localtime
 2.docker run --name <name> -v /etc/localtime:/etc/localtime
 
@@ -527,11 +491,10 @@ docker容器时间与主机时间不一致（https://www.cnblogs.com/okong/p/doc
 在Dockerfile中添加命令:
 RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo "Asia/Shanghai" > /etc/timezone
-
-***************************************************************************************
-
-docker启动WARNING：IPv4 forwarding is disabled. Networking will not work. 报错解决办法 
-
+```
+## docker启动WARNING
+```
+IPv4 forwarding is disabled. Networking will not work. 报错解决办法 
 centos 7 docker 启动了一个web服务 但是启动时 报
 WARNING: IPv4 forwarding is disabled. Networking will not work.
 #需要做如下配置
@@ -543,3 +506,4 @@ systemctl restart network && systemctl restart docker
 #查看是否修改成功 （备注：返回1，就是成功）
 [root@docker-node2 ~]# sysctl net.ipv4.ip_forward
 net.ipv4.ip_forward = 1
+```

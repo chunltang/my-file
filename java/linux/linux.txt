@@ -72,7 +72,9 @@ PATH="${PATH}:/root"将目录root添加入ls搜索路径
 mkdir -r 
 rmdir -r
 mv dir  rm dir cp dir 复制文件或重命名
-cp -a 全部    cp -r 递归  cp -s 建立快捷方式 ->   cp -l 实体连接
+cp -a 保留文件属性
+cp -r 递归  
+cp -s 建立快捷方式 ->   cp -l 实体连接
 ls -al /home/stars	ls -al PT* 正则匹配  
 su root 切换身份
 .相当于pwd，代表当前目录 ..前一级  ~ 根目录
